@@ -25,8 +25,8 @@ class HeatMapColumn extends StatelessWidget {
   /// The double value of every [HeatMapContainer]'s width and height.
   final double? size;
 
-  /// The double value of every [HeatMapContainer]'s fontSize.
-  final double? fontSize;
+  /// The TextStyle of every [HeatMapContainer]'s day number.
+  final TextStyle? dayTextStyle;
 
   /// The default background color value of [HeatMapContainer].
   final Color? defaultColor;
@@ -36,9 +36,6 @@ class HeatMapColumn extends StatelessWidget {
   /// datasets keys have to greater or equal to [startDate] and
   /// smaller or equal to [endDate].
   final Map<DateTime, int>? datasets;
-
-  /// The text color value of [HeatMapContainer].
-  final Color? textColor;
 
   /// The colorsets which give the color value for its thresholds key value.
   ///
@@ -55,8 +52,8 @@ class HeatMapColumn extends StatelessWidget {
   /// The double value of [HeatMapContainer]'s borderRadius.
   final double? borderRadius;
 
-  /// The margin value for every block.
-  final EdgeInsets? margin;
+  /// The spacing value for every block.
+  final double? spacing;
 
   /// Function that will be called when a block is clicked.
   ///
@@ -80,12 +77,11 @@ class HeatMapColumn extends StatelessWidget {
     required this.colorMode,
     required this.numDays,
     this.size,
-    this.fontSize,
     this.defaultColor,
     this.datasets,
-    this.textColor,
+    this.dayTextStyle,
     this.borderRadius,
-    this.margin,
+    this.spacing,
     this.colorsets,
     this.onClick,
     this.maxValue,
@@ -97,10 +93,8 @@ class HeatMapColumn extends StatelessWidget {
            date: DateUtil.changeDay(startDate, i),
            backgroundColor: defaultColor,
            size: size,
-           fontSize: fontSize,
-           textColor: textColor,
+           textStyle: dayTextStyle,
            borderRadius: borderRadius,
-           margin: margin,
            onClick: onClick,
            showText: showText,
            // If datasets has DateTime key which is equal to this HeatMapContainer's date,
@@ -150,16 +144,15 @@ class HeatMapColumn extends StatelessWidget {
        emptySpace = (numDays != 7)
            ? List.generate(
                7 - numDays,
-               (i) => Container(
-                 margin: margin ?? const EdgeInsets.all(2),
-                 width: size ?? 42,
-                 height: size ?? 42,
-               ),
+               (i) => SizedBox(width: size ?? 42, height: size ?? 42),
              )
            : [];
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: <Widget>[...dayContainers, ...emptySpace]);
+    return Column(
+      spacing: spacing!,
+      children: <Widget>[...dayContainers, ...emptySpace],
+    );
   }
 }

@@ -15,8 +15,8 @@ class HeatMapCalendarRow extends StatelessWidget {
   /// The double value of every [HeatMapContainer]'s width and height.
   final double? size;
 
-  /// The double value of every [HeatMapContainer]'s fontSize.
-  final double? fontSize;
+  /// The TextStyle of every [HeatMapContainer]'s day number.
+  final TextStyle? dayTextStyle;
 
   /// The List of row items.
   ///
@@ -26,9 +26,6 @@ class HeatMapCalendarRow extends StatelessWidget {
 
   /// The default background color value of [HeatMapContainer]
   final Color? defaultColor;
-
-  /// The text color value of [HeatMapContainer]
-  final Color? textColor;
 
   /// The colorsets which give the color value for its thresholds key value.
   ///
@@ -41,8 +38,8 @@ class HeatMapCalendarRow extends StatelessWidget {
   /// Make block size flexible if value is true.
   final bool? flexible;
 
-  /// The margin value for every block.
-  final EdgeInsets? margin;
+  /// The spacing value for every block.
+  final double? spacing;
 
   /// The datasets which fill blocks based on its value.
   ///
@@ -71,13 +68,12 @@ class HeatMapCalendarRow extends StatelessWidget {
     required this.endDate,
     required this.colorMode,
     this.size,
-    this.fontSize,
+    this.dayTextStyle,
     this.defaultColor,
     this.colorsets,
-    this.textColor,
     this.borderRadius,
     this.flexible,
-    this.margin,
+    this.spacing,
     this.datasets,
     this.maxValue,
     this.onClick,
@@ -99,7 +95,7 @@ class HeatMapCalendarRow extends StatelessWidget {
              ? Container(
                  width: size ?? 42,
                  height: size ?? 42,
-                 margin: margin ?? const EdgeInsets.all(2),
+                 margin: EdgeInsets.all(spacing!),
                )
              // If the day is not a empty one then create HeatMapContainer.
              : HeatMapContainer(
@@ -114,10 +110,8 @@ class HeatMapCalendarRow extends StatelessWidget {
                  ),
                  backgroundColor: defaultColor,
                  size: size,
-                 fontSize: fontSize,
-                 textColor: textColor,
+                 textStyle: dayTextStyle,
                  borderRadius: borderRadius,
-                 margin: margin,
                  onClick: onClick,
                  // If datasets has DateTime key which is equal to this HeatMapContainer's date,
                  // we have to color the matched HeatMapContainer.
@@ -168,6 +162,7 @@ class HeatMapCalendarRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      spacing: spacing!,
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[

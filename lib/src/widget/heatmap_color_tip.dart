@@ -6,7 +6,7 @@ import '../data/heatmap_color.dart';
 
 class HeatMapColorTip extends StatelessWidget {
   /// Default length of [containerCount].
-  final int _defaultLength = 7;
+  static const int _defaultLength = 7;
 
   /// The colorsets which give the color value for its thresholds key value.
   ///
@@ -35,6 +35,9 @@ class HeatMapColorTip extends StatelessWidget {
   /// The double value of tip container's size.
   final double? size;
 
+  /// The spacing value between tip containers and left/right widgets.
+  final double? spacing;
+
   const HeatMapColorTip({
     super.key,
     required this.colorMode,
@@ -43,15 +46,20 @@ class HeatMapColorTip extends StatelessWidget {
     this.rightWidget,
     this.containerCount,
     this.size,
+    this.spacing,
   });
 
   /// It returns the List of tip container.
   ///
   /// If [ColorMode.color], call [_heatmapListColor]
   /// If [ColorMode.opacity], call [_heatmapListOpacity]
-  List<Widget> _heatmapList() => colorMode == ColorMode.color
-      ? _heatmapListColor()
-      : _heatmapListOpacity();
+  Widget _heatmapList() {
+    return Row(
+      children: colorMode == ColorMode.color
+          ? _heatmapListColor()
+          : _heatmapListOpacity(),
+    );
+  }
 
   /// Evenly show every colors from lowest to highest.
   List<Widget> _heatmapListColor() {
@@ -111,12 +119,13 @@ class HeatMapColorTip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
+      padding: const EdgeInsets.only(top: 6.0),
       child: Row(
+        spacing: spacing!,
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
           leftWidget ?? _defaultText('less'),
-          ..._heatmapList(),
+          _heatmapList(),
           rightWidget ?? _defaultText('more'),
         ],
       ),

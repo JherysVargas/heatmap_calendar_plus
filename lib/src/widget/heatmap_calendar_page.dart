@@ -14,8 +14,8 @@ class HeatMapCalendarPage extends StatelessWidget {
   /// Separate [datasets] using [DateUtil.separatedMonth].
   final List<Map<DateTime, DateTime>> separatedDate;
 
-  /// The margin value for every block.
-  final EdgeInsets? margin;
+  /// The spacing value for every block.
+  final double? spacing;
 
   /// Make block size flexible if value is true.
   final bool? flexible;
@@ -23,17 +23,14 @@ class HeatMapCalendarPage extends StatelessWidget {
   /// The double value of every block's width and height.
   final double? size;
 
-  /// The double value of every block's fontSize.
-  final double? fontSize;
+  /// The TextStyle of every [HeatMapContainer]'s day number.
+  final TextStyle? dayTextStyle;
 
   /// The datasets which fill blocks based on its value.
   final Map<DateTime, int>? datasets;
 
   /// The default background color value of every blocks
   final Color? defaultColor;
-
-  /// The text color value of every blocks
-  final Color? textColor;
 
   /// ColorMode changes the color mode of blocks.
   ///
@@ -67,10 +64,9 @@ class HeatMapCalendarPage extends StatelessWidget {
     required this.colorMode,
     this.flexible,
     this.size,
-    this.fontSize,
+    this.dayTextStyle,
     this.defaultColor,
-    this.textColor,
-    this.margin,
+    this.spacing,
     this.datasets,
     this.colorsets,
     this.borderRadius,
@@ -82,34 +78,37 @@ class HeatMapCalendarPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        for (var date in separatedDate)
-          HeatMapCalendarRow(
-            startDate: date.keys.first,
-            endDate: date.values.first,
-            colorMode: colorMode,
-            size: size,
-            fontSize: fontSize,
-            defaultColor: defaultColor,
-            colorsets: colorsets,
-            textColor: textColor,
-            borderRadius: borderRadius,
-            flexible: flexible,
-            margin: margin,
-            maxValue: maxValue,
-            onClick: onClick,
-            datasets: Map.from(datasets ?? {})
-              ..removeWhere(
-                (key, value) =>
-                    !(key.isAfter(date.keys.first) &&
-                            key.isBefore(date.values.first) ||
-                        key == date.keys.first ||
-                        key == date.values.first),
-              ),
-          ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Column(
+        spacing: spacing!,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          for (var date in separatedDate)
+            HeatMapCalendarRow(
+              startDate: date.keys.first,
+              endDate: date.values.first,
+              colorMode: colorMode,
+              size: size,
+              dayTextStyle: dayTextStyle,
+              defaultColor: defaultColor,
+              colorsets: colorsets,
+              borderRadius: borderRadius,
+              flexible: flexible,
+              spacing: spacing,
+              maxValue: maxValue,
+              onClick: onClick,
+              datasets: Map.from(datasets ?? {})
+                ..removeWhere(
+                  (key, value) =>
+                      !(key.isAfter(date.keys.first) &&
+                              key.isBefore(date.values.first) ||
+                          key == date.keys.first ||
+                          key == date.values.first),
+                ),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import './widget/heatmap_page.dart';
 import './widget/heatmap_color_tip.dart';
 import './data/heatmap_color_mode.dart';
 import './util/date_util.dart';
+import './data/constants.dart';
 
 class HeatMap extends StatefulWidget {
   /// The Date value of start day of heatmap.
@@ -24,14 +25,17 @@ class HeatMap extends StatefulWidget {
   /// The color value of every block's default color.
   final Color? defaultColor;
 
-  /// The text color value of every blocks.
-  final Color? textColor;
+  /// The TextTtyle of month header.
+  final TextStyle? monthTextStyle;
+
+  /// The TextStyle of week labels.
+  final TextStyle? weekTextStyle;
+
+  /// The TextStyle of day number in each block.
+  final TextStyle? dayTextStyle;
 
   /// The double value of every block's size.
   final double? size;
-
-  /// The double value of every block's fontSize.
-  final double? fontSize;
 
   /// The colorsets which give the color value for its thresholds key value.
   ///
@@ -53,8 +57,8 @@ class HeatMap extends StatefulWidget {
   /// Parameter gives clicked [DateTime] value.
   final Function(DateTime)? onClick;
 
-  /// The margin value for every block.
-  final EdgeInsets? margin;
+  /// The spacing value for every block.
+  final double blockSpacing;
 
   /// The double value of every block's borderRadius.
   final double? borderRadius;
@@ -87,17 +91,19 @@ class HeatMap extends StatefulWidget {
   /// The double value of [HeatMapColorTip]'s tip container's size.
   final double? colorTipSize;
 
+  /// The spacing value between tip containers and left/right widgets.
+  final double colorTipSpacing;
+
   const HeatMap({
     super.key,
     required this.colorsets,
     this.colorMode = ColorMode.opacity,
     this.startDate,
     this.endDate,
-    this.textColor,
-    this.size = 20,
-    this.fontSize,
+    this.size = kDefaultBlockSizeMap,
     this.onClick,
-    this.margin,
+    this.blockSpacing = kDefaultSpacingBlock,
+    this.colorTipSpacing = kDefaultSpacingTip,
     this.borderRadius,
     this.datasets,
     this.defaultColor,
@@ -107,6 +113,9 @@ class HeatMap extends StatefulWidget {
     this.colorTipHelper,
     this.colorTipCount,
     this.colorTipSize,
+    this.monthTextStyle,
+    this.weekTextStyle,
+    this.dayTextStyle,
   });
 
   @override
@@ -139,14 +148,15 @@ class _HeatMap extends State<HeatMap> {
                 DateUtil.oneYearBefore(widget.endDate ?? DateTime.now()),
             colorMode: widget.colorMode,
             size: widget.size,
-            fontSize: widget.fontSize,
             datasets: widget.datasets,
             defaultColor: widget.defaultColor,
-            textColor: widget.textColor,
+            dayTextStyle: widget.dayTextStyle,
+            monthTextStyle: widget.monthTextStyle,
+            weekTextStyle: widget.weekTextStyle,
             colorsets: widget.colorsets,
             borderRadius: widget.borderRadius,
             onClick: widget.onClick,
-            margin: widget.margin,
+            spacing: widget.blockSpacing,
             showText: widget.showText,
           ),
         ),
@@ -160,6 +170,7 @@ class _HeatMap extends State<HeatMap> {
             rightWidget: widget.colorTipHelper?[1],
             containerCount: widget.colorTipCount,
             size: widget.colorTipSize,
+            spacing: widget.colorTipSpacing,
           ),
       ],
     );

@@ -10,11 +10,8 @@ class HeatMapMonthText extends StatelessWidget {
   /// The double value for space between labels.
   final double? size;
 
-  /// The double value of font size.
-  final double? fontSize;
-
-  /// The color value of font color.
-  final Color? fontColor;
+  /// The TextStyle of month header.
+  final TextStyle? textStyle;
 
   /// The margin value for correctly space between labels.
   final EdgeInsets? margin;
@@ -22,8 +19,7 @@ class HeatMapMonthText extends StatelessWidget {
   const HeatMapMonthText({
     super.key,
     this.firstDayInfos,
-    this.fontSize,
-    this.fontColor,
+    this.textStyle,
     this.size,
     this.margin,
   });
@@ -33,7 +29,7 @@ class HeatMapMonthText extends StatelessWidget {
     List<Widget> items = [];
 
     // Set true if previous week was the first day of the month.
-    bool _write = false;
+    bool write = false;
 
     // Loop until check every given weeks.
     for (int label = 0; label < (firstDayInfos?.length ?? 0); label++) {
@@ -41,7 +37,7 @@ class HeatMapMonthText extends StatelessWidget {
       // first week of month, create labels
       if (label == 0 ||
           (label > 0 && firstDayInfos![label] != firstDayInfos![label - 1])) {
-        _write = true;
+        write = true;
 
         // Add Text without width margin if first week is end of the month.
         // Otherwise, add Text with width margin.
@@ -61,10 +57,10 @@ class HeatMapMonthText extends StatelessWidget {
                   ),
                 ),
         );
-      } else if (_write) {
+      } else if (write) {
         // If given week is the next week of labeled week.
         // do nothing.
-        _write = false;
+        write = false;
       } else {
         // Else create empty box.
         items.add(
@@ -83,10 +79,7 @@ class HeatMapMonthText extends StatelessWidget {
   }
 
   Widget _renderText(String text) {
-    return Text(
-      text,
-      style: TextStyle(color: fontColor, fontSize: fontSize),
-    );
+    return Text(text, style: textStyle);
   }
 
   @override

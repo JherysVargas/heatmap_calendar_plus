@@ -3,8 +3,9 @@ import './data/heatmap_color_mode.dart';
 import './widget/heatmap_calendar_page.dart';
 import './widget/heatmap_color_tip.dart';
 import './util/date_util.dart';
-import 'widget/heatmap_calendar_header.dart';
-import 'widget/heatmap_calendar_week_labels.dart';
+import './data/constants.dart';
+import './widget/heatmap_calendar_header.dart';
+import './widget/heatmap_calendar_week_labels.dart';
 
 class HeatMapCalendar extends StatefulWidget {
   /// The datasets which fill blocks based on its value.
@@ -40,13 +41,16 @@ class HeatMapCalendar extends StatefulWidget {
   /// The TextStyle of week labels.
   final TextStyle? weekTextStyle;
 
+  /// The TextStyle of day number in each block.
+  final TextStyle? dayTextStyle;
+
   /// Make block size flexible if value is true.
   ///
   /// Default value is false.
   final bool flexible;
 
-  /// The margin value for every block.
-  final EdgeInsets? margin;
+  /// The spacing value for every block.
+  final double blockSpacing;
 
   /// ColorMode changes the color mode of blocks.
   ///
@@ -85,6 +89,12 @@ class HeatMapCalendar extends StatefulWidget {
   /// The double value of [HeatMapColorTip]'s tip container's size.
   final double? colorTipSize;
 
+  /// The spacing value between tip containers and left/right widgets.
+  final double colorTipSpacing;
+
+  /// The EdgeInsets value of margin for header.
+  final EdgeInsets? marginHeader;
+
   const HeatMapCalendar({
     super.key,
     required this.colorsets,
@@ -92,20 +102,23 @@ class HeatMapCalendar extends StatefulWidget {
     this.defaultColor,
     this.datasets,
     this.initDate,
-    this.size = 42,
+    this.size = kDefaultBlockSizeCalendar,
     this.fontSize,
     this.monthTextStyle,
     this.textColor,
     this.weekTextStyle,
+    this.dayTextStyle,
     this.borderRadius,
     this.flexible = false,
-    this.margin,
+    this.blockSpacing = kDefaultSpacingBlock,
     this.onClick,
     this.onMonthChange,
     this.showColorTip = true,
     this.colorTipHelper,
     this.colorTipCount,
     this.colorTipSize,
+    this.colorTipSpacing = kDefaultSpacingTip,
+    this.marginHeader,
   });
 
   @override
@@ -135,23 +148,7 @@ class _HeatMapCalendar extends State<HeatMapCalendar> {
         direction,
       );
     });
-    if (widget.onMonthChange != null) widget.onMonthChange!(_currentDate!);
-  }
-
-  /// Header widget which shows left, right buttons and year/month text.
-  Widget _header() {
-    return HeatMapCalendarHeader(
-      currentDate: _currentDate,
-      changeMonth: changeMonth,
-      textStyle: widget.monthTextStyle,
-    );
-  }
-
-  Widget _weekLabel() {
-    return HeatMapCalendarWeekLabels(
-      flexible: widget.flexible,
-      textStyle: widget.weekTextStyle,
-    );
+    widget.onMonthChange?.call(_currentDate!);
   }
 
   /// Expand width dynamically if [flexible] is true.
@@ -164,17 +161,24 @@ class _HeatMapCalendar extends State<HeatMapCalendar> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          _header(),
-          _weekLabel(),
+          HeatMapCalendarHeader(
+            margin: widget.marginHeader,
+            currentDate: _currentDate,
+            changeMonth: changeMonth,
+            textStyle: widget.monthTextStyle,
+          ),
+          HeatMapCalendarWeekLabels(
+            flexible: widget.flexible,
+            textStyle: widget.weekTextStyle,
+          ),
           HeatMapCalendarPage(
             baseDate: _currentDate ?? DateTime.now(),
             colorMode: widget.colorMode,
             flexible: widget.flexible,
             size: widget.size,
-            fontSize: widget.fontSize,
             defaultColor: widget.defaultColor,
-            textColor: widget.textColor,
-            margin: widget.margin,
+            dayTextStyle: widget.dayTextStyle,
+            spacing: widget.blockSpacing,
             datasets: widget.datasets,
             colorsets: widget.colorsets,
             borderRadius: widget.borderRadius,
@@ -188,6 +192,7 @@ class _HeatMapCalendar extends State<HeatMapCalendar> {
               rightWidget: widget.colorTipHelper?[1],
               containerCount: widget.colorTipCount,
               size: widget.colorTipSize,
+              spacing: widget.colorTipSpacing,
             ),
         ],
       ),

@@ -33,20 +33,23 @@ class HeatMapPage extends StatelessWidget {
   /// The double value of every block's width and height.
   final double? size;
 
-  /// The double value of every block's fontSize.
-  final double? fontSize;
+  /// The TextStyle of month header.
+  final TextStyle? monthTextStyle;
+
+  /// The TextStyle of week labels.
+  final TextStyle? weekTextStyle;
+
+  /// The TextStyle of day number in each block.
+  final TextStyle? dayTextStyle;
 
   /// The datasets which fill blocks based on its value.
   final Map<DateTime, int>? datasets;
 
-  /// The margin value for every block.
-  final EdgeInsets? margin;
+  /// The spacing value for every block.
+  final double? spacing;
 
   /// The default background color value of every blocks.
   final Color? defaultColor;
-
-  /// The text color value of every blocks.
-  final Color? textColor;
 
   /// ColorMode changes the color mode of blocks.
   ///
@@ -81,15 +84,16 @@ class HeatMapPage extends StatelessWidget {
     required this.startDate,
     required this.endDate,
     this.size,
-    this.fontSize,
     this.datasets,
     this.defaultColor,
-    this.textColor,
+    this.dayTextStyle,
     this.colorsets,
     this.borderRadius,
     this.onClick,
-    this.margin,
+    this.spacing,
     this.showText,
+    this.monthTextStyle,
+    this.weekTextStyle,
   }) : _dateDifferent = endDate.difference(startDate).inDays,
        maxValue = DatasetsUtil.getMaxValue(datasets);
 
@@ -106,7 +110,7 @@ class HeatMapPage extends StatelessWidget {
       datePos += 7
     ) {
       // Get first day of week by adding cursor's value to startDate.
-      DateTime _firstDay = DateUtil.changeDay(startDate, datePos);
+      DateTime firstDay = DateUtil.changeDay(startDate, datePos);
 
       columns.add(
         HeatMapColumn(
@@ -115,19 +119,18 @@ class HeatMapPage extends StatelessWidget {
           //
           // To make empty space to future day, we have to pass this HeatMapPage's
           // endDate to HeatMapColumn's endDate.
-          startDate: _firstDay,
+          startDate: firstDay,
           endDate: datePos <= _dateDifferent - 7
               ? DateUtil.changeDay(startDate, datePos + 6)
               : endDate,
           colorMode: colorMode,
-          numDays: min(endDate.difference(_firstDay).inDays + 1, 7),
+          numDays: min(endDate.difference(firstDay).inDays + 1, 7),
           size: size,
-          fontSize: fontSize,
           defaultColor: defaultColor,
           colorsets: colorsets,
-          textColor: textColor,
+          dayTextStyle: dayTextStyle,
           borderRadius: borderRadius,
-          margin: margin,
+          spacing: spacing,
           maxValue: maxValue,
           onClick: onClick,
           datasets: datasets,
@@ -136,7 +139,7 @@ class HeatMapPage extends StatelessWidget {
       );
 
       // also add first day's month information to _firstDayInfos list.
-      _firstDayInfos.add(_firstDay.month);
+      _firstDayInfos.add(firstDay.month);
     }
 
     return columns;
@@ -147,29 +150,27 @@ class HeatMapPage extends StatelessWidget {
     return Column(
       children: <Widget>[
         Row(
+          spacing: spacing!,
           mainAxisSize: MainAxisSize.min,
           children: [
             // Show week labels to left side of heatmap.
-            HeatMapWeekText(
-              margin: margin,
-              fontSize: fontSize,
-              size: size,
-              fontColor: textColor,
-            ),
+            HeatMapWeekText(size: size, textStyle: weekTextStyle),
             Column(
+              spacing: spacing!,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Show month labels to top of heatmap.
                 HeatMapMonthText(
                   firstDayInfos: _firstDayInfos,
-                  margin: margin,
-                  fontSize: fontSize,
-                  fontColor: textColor,
+                  textStyle: monthTextStyle,
                   size: size,
                 ),
 
                 // Heatmap itself.
-                Row(children: <Widget>[..._heatmapColumnList()]),
+                Row(
+                  spacing: spacing!,
+                  children: <Widget>[..._heatmapColumnList()],
+                ),
               ],
             ),
           ],
