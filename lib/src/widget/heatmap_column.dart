@@ -74,7 +74,7 @@ class HeatMapColumn extends StatelessWidget {
   final int numDays;
 
   HeatMapColumn({
-    Key? key,
+    super.key,
     required this.startDate,
     required this.endDate,
     required this.colorMode,
@@ -90,67 +90,76 @@ class HeatMapColumn extends StatelessWidget {
     this.onClick,
     this.maxValue,
     this.showText,
-  })  :
-        // Init list.
-        dayContainers = List.generate(
-          numDays,
-          (i) => HeatMapContainer(
-            date: DateUtil.changeDay(startDate, i),
-            backgroundColor: defaultColor,
-            size: size,
-            fontSize: fontSize,
-            textColor: textColor,
-            borderRadius: borderRadius,
-            margin: margin,
-            onClick: onClick,
-            showText: showText,
-            // If datasets has DateTime key which is equal to this HeatMapContainer's date,
-            // we have to color the matched HeatMapContainer.
-            //
-            // If datasets is null or doesn't contains the equal DateTime value, send null.
-            selectedColor: datasets?.keys.contains(DateTime(
-                        startDate.year,
-                        startDate.month,
-                        startDate.day - startDate.weekday % 7 + i)) ??
-                    false
-                // If colorMode is ColorMode.opacity,
-                ? colorMode == ColorMode.opacity
-                    // Color the container with first value of colorsets
-                    // and set opacity value to current day's datasets key
-                    // devided by maxValue which is the maximum value of the month.
-                    ? colorsets?.values.first.withOpacity((datasets?[DateTime(
-                                startDate.year,
-                                startDate.month,
-                                startDate.day + i - (startDate.weekday % 7))] ??
-                            1) /
-                        (maxValue ?? 1))
-                    // Else if colorMode is ColorMode.Color.
-                    //
-                    // Get color value from colorsets which is filtered with DateTime value
-                    // Using DatasetsUtil.getColor()
-                    : DatasetsUtil.getColor(
-                        colorsets,
-                        datasets?[DateTime(startDate.year, startDate.month,
-                            startDate.day + i - (startDate.weekday % 7))])
-                : null,
-          ),
-        ),
-        // Fill emptySpace list only if given wek doesn't have 7 days.
-        emptySpace = (numDays != 7)
-            ? List.generate(
-                7 - numDays,
-                (i) => Container(
-                    margin: margin ?? const EdgeInsets.all(2),
-                    width: size ?? 42,
-                    height: size ?? 42),
-              )
-            : [],
-        super(key: key);
+  }) : // Init list.
+       dayContainers = List.generate(
+         numDays,
+         (i) => HeatMapContainer(
+           date: DateUtil.changeDay(startDate, i),
+           backgroundColor: defaultColor,
+           size: size,
+           fontSize: fontSize,
+           textColor: textColor,
+           borderRadius: borderRadius,
+           margin: margin,
+           onClick: onClick,
+           showText: showText,
+           // If datasets has DateTime key which is equal to this HeatMapContainer's date,
+           // we have to color the matched HeatMapContainer.
+           //
+           // If datasets is null or doesn't contains the equal DateTime value, send null.
+           selectedColor:
+               datasets?.keys.contains(
+                     DateTime(
+                       startDate.year,
+                       startDate.month,
+                       startDate.day - startDate.weekday % 7 + i,
+                     ),
+                   ) ??
+                   false
+               // If colorMode is ColorMode.opacity,
+               ? colorMode == ColorMode.opacity
+                     // Color the container with first value of colorsets
+                     // and set opacity value to current day's datasets key
+                     // devided by maxValue which is the maximum value of the month.
+                     ? colorsets?.values.first.withValues(
+                         alpha:
+                             (datasets?[DateTime(
+                                   startDate.year,
+                                   startDate.month,
+                                   startDate.day + i - (startDate.weekday % 7),
+                                 )] ??
+                                 1) /
+                             (maxValue ?? 1),
+                       )
+                     // Else if colorMode is ColorMode.Color.
+                     //
+                     // Get color value from colorsets which is filtered with DateTime value
+                     // Using DatasetsUtil.getColor()
+                     : DatasetsUtil.getColor(
+                         colorsets,
+                         datasets?[DateTime(
+                           startDate.year,
+                           startDate.month,
+                           startDate.day + i - (startDate.weekday % 7),
+                         )],
+                       )
+               : null,
+         ),
+       ),
+       // Fill emptySpace list only if given wek doesn't have 7 days.
+       emptySpace = (numDays != 7)
+           ? List.generate(
+               7 - numDays,
+               (i) => Container(
+                 margin: margin ?? const EdgeInsets.all(2),
+                 width: size ?? 42,
+                 height: size ?? 42,
+               ),
+             )
+           : [];
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[...dayContainers, ...emptySpace],
-    );
+    return Column(children: <Widget>[...dayContainers, ...emptySpace]);
   }
 }

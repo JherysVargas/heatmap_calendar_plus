@@ -20,13 +20,13 @@ class HeatMapMonthText extends StatelessWidget {
   final EdgeInsets? margin;
 
   const HeatMapMonthText({
-    Key? key,
+    super.key,
     this.firstDayInfos,
     this.fontSize,
     this.fontColor,
     this.size,
     this.margin,
-  }) : super(key: key);
+  });
 
   /// The list of every month labels and fitted space.
   List<Widget> _labels() {
@@ -46,14 +46,19 @@ class HeatMapMonthText extends StatelessWidget {
         // Add Text without width margin if first week is end of the month.
         // Otherwise, add Text with width margin.
         items.add(
-          firstDayInfos!.length == 1 || (label == 0 && firstDayInfos![label] != firstDayInfos![label + 1])
+          firstDayInfos!.length == 1 ||
+                  (label == 0 &&
+                      firstDayInfos![label] != firstDayInfos![label + 1])
               ? _renderText(DateUtil.SHORT_MONTH_LABEL[firstDayInfos![label]])
               : Container(
                   width: (((size ?? 20) + (margin?.right ?? 2)) * 2),
                   margin: EdgeInsets.only(
-                      left: margin?.left ?? 2, right: margin?.right ?? 2),
+                    left: margin?.left ?? 2,
+                    right: margin?.right ?? 2,
+                  ),
                   child: _renderText(
-                      DateUtil.SHORT_MONTH_LABEL[firstDayInfos![label]]),
+                    DateUtil.SHORT_MONTH_LABEL[firstDayInfos![label]],
+                  ),
                 ),
         );
       } else if (_write) {
@@ -62,11 +67,15 @@ class HeatMapMonthText extends StatelessWidget {
         _write = false;
       } else {
         // Else create empty box.
-        items.add(Container(
-          margin: EdgeInsets.only(
-              left: margin?.left ?? 2, right: margin?.right ?? 2),
-          width: size ?? 20,
-        ));
+        items.add(
+          Container(
+            margin: EdgeInsets.only(
+              left: margin?.left ?? 2,
+              right: margin?.right ?? 2,
+            ),
+            width: size ?? 20,
+          ),
+        );
       }
     }
 
@@ -76,17 +85,12 @@ class HeatMapMonthText extends StatelessWidget {
   Widget _renderText(String text) {
     return Text(
       text,
-      style: TextStyle(
-        color: fontColor,
-        fontSize: fontSize,
-      ),
+      style: TextStyle(color: fontColor, fontSize: fontSize),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: _labels(),
-    );
+    return Row(children: _labels());
   }
 }

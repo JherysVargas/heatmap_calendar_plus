@@ -36,14 +36,14 @@ class HeatMapColorTip extends StatelessWidget {
   final double? size;
 
   const HeatMapColorTip({
-    Key? key,
+    super.key,
     required this.colorMode,
     this.colorsets,
     this.leftWidget,
     this.rightWidget,
     this.containerCount,
     this.size,
-  }) : super(key: key);
+  });
 
   /// It returns the List of tip container.
   ///
@@ -56,13 +56,20 @@ class HeatMapColorTip extends StatelessWidget {
   /// Evenly show every colors from lowest to highest.
   List<Widget> _heatmapListColor() {
     List<Widget> children = [];
-    SplayTreeMap sortedColorset =
-        SplayTreeMap.from(colorsets ?? {}, (a, b) => a > b ? 1 : -1);
+    SplayTreeMap sortedColorset = SplayTreeMap.from(
+      colorsets ?? {},
+      (a, b) => a > b ? 1 : -1,
+    );
 
     for (int i = 0; i < (containerCount ?? _defaultLength); i++) {
-      children.add(_tipContainer(sortedColorset.values.elementAt(
-          (sortedColorset.length / (containerCount ?? _defaultLength) * i)
-              .floor())));
+      children.add(
+        _tipContainer(
+          sortedColorset.values.elementAt(
+            (sortedColorset.length / (containerCount ?? _defaultLength) * i)
+                .floor(),
+          ),
+        ),
+      );
     }
 
     return children;
@@ -73,9 +80,14 @@ class HeatMapColorTip extends StatelessWidget {
     List<Widget> children = [];
 
     for (int i = 0; i < (containerCount ?? _defaultLength); i++) {
-      children.add(_tipContainer(colorsets?.values.first
-              .withOpacity(i / (containerCount ?? _defaultLength)) ??
-          Colors.white));
+      children.add(
+        _tipContainer(
+          colorsets?.values.first.withValues(
+                alpha: i / (containerCount ?? _defaultLength),
+              ) ??
+              Colors.white,
+        ),
+      );
     }
     return children;
   }
@@ -84,11 +96,7 @@ class HeatMapColorTip extends StatelessWidget {
   Widget _tipContainer(Color color) {
     return Container(
       color: HeatMapColor.defaultColor,
-      child: Container(
-        width: size ?? 10,
-        height: size ?? 10,
-        color: color,
-      ),
+      child: Container(width: size ?? 10, height: size ?? 10, color: color),
     );
   }
 

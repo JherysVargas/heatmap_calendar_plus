@@ -76,7 +76,7 @@ class HeatMapPage extends StatelessWidget {
   final bool? showText;
 
   HeatMapPage({
-    Key? key,
+    super.key,
     required this.colorMode,
     required this.startDate,
     required this.endDate,
@@ -90,9 +90,8 @@ class HeatMapPage extends StatelessWidget {
     this.onClick,
     this.margin,
     this.showText,
-  })  : _dateDifferent = endDate.difference(startDate).inDays,
-        maxValue = DatasetsUtil.getMaxValue(datasets),
-        super(key: key);
+  }) : _dateDifferent = endDate.difference(startDate).inDays,
+       maxValue = DatasetsUtil.getMaxValue(datasets);
 
   /// Get [HeatMapColumn] from [startDate] to [endDate].
   List<Widget> _heatmapColumnList() {
@@ -101,36 +100,40 @@ class HeatMapPage extends StatelessWidget {
 
     // Set cursor(position) to first day of weeks
     // until cursor reaches the final week.
-    for (int datePos = 0 - (startDate.weekday % 7);
-        datePos <= _dateDifferent;
-        datePos += 7) {
+    for (
+      int datePos = 0 - (startDate.weekday % 7);
+      datePos <= _dateDifferent;
+      datePos += 7
+    ) {
       // Get first day of week by adding cursor's value to startDate.
       DateTime _firstDay = DateUtil.changeDay(startDate, datePos);
 
-      columns.add(HeatMapColumn(
-        // If last day is not saturday, week also includes future Date.
-        // So we have to make future day on last column blanck.
-        //
-        // To make empty space to future day, we have to pass this HeatMapPage's
-        // endDate to HeatMapColumn's endDate.
-        startDate: _firstDay,
-        endDate: datePos <= _dateDifferent - 7
-            ? DateUtil.changeDay(startDate, datePos + 6)
-            : endDate,
-        colorMode: colorMode,
-        numDays: min(endDate.difference(_firstDay).inDays + 1, 7),
-        size: size,
-        fontSize: fontSize,
-        defaultColor: defaultColor,
-        colorsets: colorsets,
-        textColor: textColor,
-        borderRadius: borderRadius,
-        margin: margin,
-        maxValue: maxValue,
-        onClick: onClick,
-        datasets: datasets,
-        showText: showText,
-      ));
+      columns.add(
+        HeatMapColumn(
+          // If last day is not saturday, week also includes future Date.
+          // So we have to make future day on last column blanck.
+          //
+          // To make empty space to future day, we have to pass this HeatMapPage's
+          // endDate to HeatMapColumn's endDate.
+          startDate: _firstDay,
+          endDate: datePos <= _dateDifferent - 7
+              ? DateUtil.changeDay(startDate, datePos + 6)
+              : endDate,
+          colorMode: colorMode,
+          numDays: min(endDate.difference(_firstDay).inDays + 1, 7),
+          size: size,
+          fontSize: fontSize,
+          defaultColor: defaultColor,
+          colorsets: colorsets,
+          textColor: textColor,
+          borderRadius: borderRadius,
+          margin: margin,
+          maxValue: maxValue,
+          onClick: onClick,
+          datasets: datasets,
+          showText: showText,
+        ),
+      );
 
       // also add first day's month information to _firstDayInfos list.
       _firstDayInfos.add(_firstDay.month);
@@ -166,9 +169,7 @@ class HeatMapPage extends StatelessWidget {
                 ),
 
                 // Heatmap itself.
-                Row(
-                  children: <Widget>[..._heatmapColumnList()],
-                ),
+                Row(children: <Widget>[..._heatmapColumnList()]),
               ],
             ),
           ],

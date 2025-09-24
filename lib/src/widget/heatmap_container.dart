@@ -14,7 +14,7 @@ class HeatMapContainer extends StatelessWidget {
   final Function(DateTime dateTime)? onClick;
 
   const HeatMapContainer({
-    Key? key,
+    super.key,
     required this.date,
     this.margin,
     this.size,
@@ -25,7 +25,7 @@ class HeatMapContainer extends StatelessWidget {
     this.textColor,
     this.onClick,
     this.showText,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +47,16 @@ class HeatMapContainer extends StatelessWidget {
                 ? Text(
                     date.day.toString(),
                     style: TextStyle(
-                        color: textColor ?? const Color(0xFF8A8A8A),
-                        fontSize: fontSize),
+                      color: textColor ?? const Color(0xFF8A8A8A),
+                      fontSize: fontSize,
+                    ),
                   )
                 : null,
             decoration: BoxDecoration(
               color: selectedColor,
-              borderRadius:
-                  BorderRadius.all(Radius.circular(borderRadius ?? 5)),
+              borderRadius: BorderRadius.all(
+                Radius.circular(borderRadius ?? 5),
+              ),
             ),
           ),
         ),

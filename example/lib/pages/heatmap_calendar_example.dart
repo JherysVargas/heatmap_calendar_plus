@@ -63,6 +63,10 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
                   datasets: heatMapDatasets,
                   colorMode:
                       isOpacityMode ? ColorMode.opacity : ColorMode.color,
+                  monthTextStyle: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xff9b9b9b),
+                  ),
                   colorsets: const {
                     1: Colors.red,
                     3: Colors.orange,
