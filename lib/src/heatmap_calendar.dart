@@ -7,9 +7,17 @@ import './data/constants.dart';
 import './widget/heatmap_calendar_header.dart';
 import './widget/heatmap_calendar_week_labels.dart';
 
+typedef HeaderBuilder =
+    Widget Function(BuildContext context, DateTime? currentDate);
+
 class HeatMapCalendar extends StatefulWidget {
   /// The datasets which fill blocks based on its value.
   final Map<DateTime, int>? datasets;
+
+  /// Which day the week should start?
+  /// weekStartsWith = 1 for Monday, ..., weekStartsWith = 7 for Sunday.
+  /// Default to 7 (the week starts wih Sunday).
+  final int weekStartsWith;
 
   /// The color value of every block's default color.
   final Color? defaultColor;
@@ -28,12 +36,6 @@ class HeatMapCalendar extends StatefulWidget {
 
   /// The double value of every block's size.
   final double? size;
-
-  /// The text color value of every blocks.
-  final Color? textColor;
-
-  /// The double value of every block's fontSize.
-  final double? fontSize;
 
   /// The TextTtyle of month header.
   final TextStyle? monthTextStyle;
@@ -74,7 +76,7 @@ class HeatMapCalendar extends StatefulWidget {
   /// Show color tip which represents the color range at the below.
   ///
   /// Default value is true.
-  final bool? showColorTip;
+  final bool showColorTip;
 
   /// Widgets which shown at left and right side of colorTip.
   ///
@@ -95,6 +97,15 @@ class HeatMapCalendar extends StatefulWidget {
   /// The EdgeInsets value of margin for header.
   final EdgeInsets? marginHeader;
 
+  /// Custom header builder.
+  final HeaderBuilder? headerBuilder;
+
+  /// Controller for manipulating the state of [HeatMapCalendar].
+  final HeatMapCalendarController? controller;
+
+  /// The date format pattern of date header.
+  final String datePattern;
+
   const HeatMapCalendar({
     super.key,
     required this.colorsets,
@@ -103,9 +114,7 @@ class HeatMapCalendar extends StatefulWidget {
     this.datasets,
     this.initDate,
     this.size = kDefaultBlockSizeCalendar,
-    this.fontSize,
     this.monthTextStyle,
-    this.textColor,
     this.weekTextStyle,
     this.dayTextStyle,
     this.borderRadius,
@@ -119,13 +128,17 @@ class HeatMapCalendar extends StatefulWidget {
     this.colorTipSize,
     this.colorTipSpacing = kDefaultSpacingTip,
     this.marginHeader,
+    this.headerBuilder,
+    this.controller,
+    this.datePattern = kDefaultDatePatternCalendar,
+    this.weekStartsWith = kDefaultStartDayOfWeek,
   });
 
   @override
-  State<StatefulWidget> createState() => _HeatMapCalendar();
+  State<StatefulWidget> createState() => _HeatMapCalendarState();
 }
 
-class _HeatMapCalendar extends State<HeatMapCalendar> {
+class _HeatMapCalendarState extends State<HeatMapCalendar> {
   // The DateTime value of first day of the current month.
   DateTime? _currentDate;
 
@@ -133,12 +146,21 @@ class _HeatMapCalendar extends State<HeatMapCalendar> {
   void initState() {
     super.initState();
     setState(() {
+      // Link controller with this state.
+      widget.controller?._state = this;
       // Set _currentDate value to first day of initialized date or
       // today's month if widget.initDate is null.
       _currentDate = DateUtil.startDayOfMonth(
         widget.initDate ?? DateTime.now(),
       );
     });
+  }
+
+  void gotToDate(DateTime date) {
+    setState(() {
+      _currentDate = DateUtil.startDayOfMonth(date);
+    });
+    widget.onMonthChange?.call(_currentDate!);
   }
 
   void changeMonth(int direction) {
@@ -151,6 +173,20 @@ class _HeatMapCalendar extends State<HeatMapCalendar> {
     widget.onMonthChange?.call(_currentDate!);
   }
 
+  Widget _buildHeader() {
+    if (widget.headerBuilder != null) {
+      return widget.headerBuilder!(context, _currentDate);
+    }
+
+    return HeatMapCalendarHeader(
+      margin: widget.marginHeader,
+      currentDate: _currentDate,
+      changeMonth: changeMonth,
+      datePattern: widget.datePattern,
+      textStyle: widget.monthTextStyle,
+    );
+  }
+
   /// Expand width dynamically if [flexible] is true.
   Widget _intrinsicWidth({required Widget child}) =>
       (widget.flexible) ? child : IntrinsicWidth(child: child);
@@ -161,17 +197,15 @@ class _HeatMapCalendar extends State<HeatMapCalendar> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          HeatMapCalendarHeader(
-            margin: widget.marginHeader,
-            currentDate: _currentDate,
-            changeMonth: changeMonth,
-            textStyle: widget.monthTextStyle,
-          ),
+          _buildHeader(),
           HeatMapCalendarWeekLabels(
+            size: widget.size,
+            startDayOfWeek: widget.weekStartsWith,
             flexible: widget.flexible,
             textStyle: widget.weekTextStyle,
           ),
           HeatMapCalendarPage(
+            weekStartsWith: widget.weekStartsWith,
             baseDate: _currentDate ?? DateTime.now(),
             colorMode: widget.colorMode,
             flexible: widget.flexible,
@@ -184,7 +218,7 @@ class _HeatMapCalendar extends State<HeatMapCalendar> {
             borderRadius: widget.borderRadius,
             onClick: widget.onClick,
           ),
-          if (widget.showColorTip == true)
+          if (widget.showColorTip)
             HeatMapColorTip(
               colorMode: widget.colorMode,
               colorsets: widget.colorsets,
@@ -197,5 +231,19 @@ class _HeatMapCalendar extends State<HeatMapCalendar> {
         ],
       ),
     );
+  }
+}
+
+class HeatMapCalendarController {
+  _HeatMapCalendarState? _state;
+
+  DateTime? get currentDate => _state?._currentDate;
+
+  void nextMonth() => _state?.changeMonth(1);
+
+  void previousMonth() => _state?.changeMonth(-1);
+
+  void gotToDate(DateTime date) {
+    _state?.gotToDate(date);
   }
 }

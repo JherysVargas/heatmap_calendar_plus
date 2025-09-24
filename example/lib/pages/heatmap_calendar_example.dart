@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
@@ -12,6 +14,9 @@ class HeatMapCalendarExample extends StatefulWidget {
 class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
   final TextEditingController dateController = TextEditingController();
   final TextEditingController heatLevelController = TextEditingController();
+
+  final HeatMapCalendarController calendarController =
+      HeatMapCalendarController();
 
   bool isOpacityMode = true;
 
@@ -60,6 +65,8 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
                 // HeatMapCalendar
                 child: HeatMapCalendar(
                   flexible: true,
+                  initDate: DateTime(2020, 6, 1),
+                  controller: calendarController,
                   datasets: heatMapDatasets,
                   colorMode:
                       isOpacityMode ? ColorMode.opacity : ColorMode.color,
@@ -67,7 +74,9 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
                     fontSize: 16,
                     color: Colors.black,
                   ),
+                  datePattern: 'yyyy-MM-dd',
                   blockSpacing: 6,
+                  // weekStartsWith: 1,
                   marginHeader: const EdgeInsets.only(bottom: 10),
                   colorsets: const {
                     1: Colors.red,
@@ -77,6 +86,49 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
                     9: Colors.blue,
                     11: Colors.indigo,
                     13: Colors.purple,
+                  },
+                  headerBuilder: (context, currentDate) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left),
+                          color: Colors.black54,
+                          onPressed: () {
+                            calendarController.previousMonth();
+                          },
+                        ),
+                        GestureDetector(
+                          child: Text(
+                            '${currentDate?.year} - ${currentDate?.month} - ${currentDate?.day}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          onTap: () {
+                            final randomMonth = Random().nextInt(12) + 1;
+                            final randomYear = Random().nextInt(5) + 2020;
+
+                            calendarController.gotToDate(
+                              DateTime(
+                                randomYear,
+                                randomMonth,
+                                1,
+                              ),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right),
+                          color: Colors.black54,
+                          onPressed: () {
+                            calendarController.nextMonth();
+                          },
+                        ),
+                      ],
+                    );
                   },
                 ),
               ),

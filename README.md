@@ -43,20 +43,22 @@ import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 |endDate|`DateTime?`|Today<br>( `DateTime.now()` )|Last day of `HeatMap`.|
 |datasets|`Map<DateTime, int>?`|`null`|Sets of data which to be displayed.|
 |colorsets|`Map<int, Color>`|required|Sets of color values for its thresholds key value.<br>At least one Color is required.<br>Be aware that only first color will be used if `ColorMode` is `ColorMode.opacity`.|
-|defaultColor|`Color?`|![#F8F9FA](https://via.placeholder.com/15/F8F9FA/000000?text=+) `Color(0xFFF8F9FA)`|Default color of every block.|
-|textColor|`Color?`|![#8A8A8A](https://via.placeholder.com/15/8A8A8A/000000?text=+) `Color(0xFF8A8A8A)`|Color value of every text.|
+|defaultColor|`Color?`|`null`|Default color of every block.|
+|monthTextStyle|`TextStyle?`|`null`|The TextStyle of month header.|
+|weekTextStyle|`TextStyle?`|`null`|The TextStyle of week labels.|
+|dayTextStyle|`TextStyle?`|`null`|The TextStyle of day number in each block.|
 |colorMode|`ColorMode`|`ColorMode.opacity`|`ColorMode.opacity` requires just one colorsets value and changes color dynamically based on hightest value of `datasets`.<br>`ColorMode.color` changes colors based on `colorsets` thresholds key value.|
 |size|`double?`|`20`|The size of every block.|
-|fontSize|`double?`|`null`|The size of every text.|
 |onClick|`Function(DateTime)?`|`null`|Callback function which will be called if user clicks the block.|
-|margin|`EdgeInsets?`|`EdgeInsets.all(2)`|The margin value of block.|
-|borderRadius|`double?`|`5`|Border radius value of block.|
+|blockSpacing|`double`|`6.0`|The spacing value for every block.|
+|borderRadius|`double?`|`null`|Border radius value of block.|
 |scrollable|`bool`|`false`|Make `HeatMap` scrollable if `scrollable` is `true`.|
-|showText|`bool?`|`false`|Show day text in every block if `showText` is `true`.|
-|showColorTip|`bool?`|`true`|Show color tip if `showColorTip` is `true`.|
+|showText|`bool`|`false`|Show day text in every block if `showText` is `true`.|
+|showColorTip|`bool`|`true`|Show color tip if `showColorTip` is `true`.|
 |colorTipHelper|`List<Widget?>?`|`null`|Widgets which are shown at left and right side of `colorTip`.<br>First value is the left side widget and second value is the right side widget.<br>Give null value makes default 'less' and 'more' text.|
-|colorTipCount|`int?`|`7`|Length of `colorTip` block.|
-|colorTipSize|`double?`|`10`|The size of `colorTip`.|
+|colorTipCount|`int?`|`null`|Length of `colorTip` block.|
+|colorTipSize|`double?`|`null`|The size of `colorTip`.|
+|colorTipSpacing|`double`|`6.0`|The spacing value between tip containers and left/right widgets.|
 
 ### HeatMapCalendar
 
@@ -66,22 +68,27 @@ import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 |initDate|`DateTime?`|Today<br>( `DateTime.now()` )|Initialized Year/Month value of `HeatMapCalendar`.|
 |datasets|`Map<DateTime, int>?`|`null`|Sets of data which to be displayed.|
 |colorsets|`Map<int, Color>`|required|Sets of color values for its thresholds key value.<br>At least one Color is required.<br>Be aware that only first color will be used if `ColorMode` is `ColorMode.opacity`.|
-|defaultColor|`Color?`|![#F8F9FA](https://via.placeholder.com/15/F8F9FA/000000?text=+) `Color(0xFFF8F9FA)`|Default color of every block.|
-|textColor|`Color?`|![#8A8A8A](https://via.placeholder.com/15/8A8A8A/000000?text=+) `Color(0xFF8A8A8A)`|Color value of every text.|
+|defaultColor|`Color?`|`null`|Default color of every block.|
+|textColor|`Color?`|`null`|Color value of every text.|
 |colorMode|`ColorMode`|`ColorMode.opacity`|`ColorMode.opacity` requires just one colorsets value and changes color dynamically based on hightest value of `datasets`.<br>`ColorMode.color` changes colors based on `colorsets` thresholds key value.|
 |size|`double?`|`42`|The size of every block.|
 |fontSize|`double?`|`null`|The size of every text.|
-|monthFontSize|`double?`|`12`|The size of month label.|
-|weekFontSize|`double?`|`12`|The size of week label.|
-|weekTextColor|`Color?`|![#758EA1](https://via.placeholder.com/15/758EA1/000000?text=+) `Color(0xFF758EA1)`|Default color of every block.|Color value of week label.|
+|monthTextStyle|`TextStyle?`|`null`|The TextStyle of month header.|
+|weekTextStyle|`TextStyle?`|`null`|The TextStyle of week labels.|
+|dayTextStyle|`TextStyle?`|`null`|The TextStyle of day number in each block.|
 |onClick|`Function(DateTime)?`|`null`|Callback function which will be called if user clicks the block.|
-|margin|`EdgeInsets`|`EdgeInsets.all(2)`|The margin value of block.|
-|borderRadius|`double?`|`5`|Border radius value of block.|
-|flexible|`bool?`|`false`|Makes `HeatMapCalendar`'s size dynamically fit on screen.<br>If `flexible` is `true` then, `size` props will be ignored.|
-|showColorTip|`bool?`|`true`|Show color tip if `showColorTip` is `true`.|
+|onMonthChange|`Function(DateTime)?`|`null`|Callback function which will be called when month is changed.|
+|borderRadius|`double?`|`null`|Border radius value of block.|
+|flexible|`bool`|`false`|Makes `HeatMapCalendar`'s size dynamically fit on screen.<br>If `flexible` is `true` then, `size` props will be ignored.|
+|blockSpacing|`double`|`6.0`|The spacing value for every block.|
+|showColorTip|`bool`|`true`|Show color tip if `showColorTip` is `true`.|
 |colorTipHelper|`List<Widget?>?`|`null`|Widgets which are shown at left and right side of `colorTip`.<br>First value is the left side widget and second value is the right side widget.<br>Give null value makes default 'less' and 'more' text.|
-|colorTipCount|`int?`|`7`|Length of `colorTip` block.|
-|colorTipSize|`double?`|`10`|The size of `colorTip`.|
+|colorTipCount|`int?`|`null`|Length of `colorTip` block.|
+|colorTipSize|`double?`|`null`|The size of `colorTip`.|
+|colorTipSpacing|`double`|`6.0`|The spacing value between tip containers and left/right widgets.|
+|marginHeader|`EdgeInsets?`|`null`|The EdgeInsets value of margin for header.|
+|headerBuilder|`HeaderBuilder?`|`null`|Custom header builder function.|
+|controller|`HeatMapCalendarController?`|`null`|Controller for manipulating the state of `HeatMapCalendar`.|
 
 ## Example
 

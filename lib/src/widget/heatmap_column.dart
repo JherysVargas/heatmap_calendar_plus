@@ -22,6 +22,11 @@ class HeatMapColumn extends StatelessWidget {
   /// The date value of last day of given week.
   final DateTime endDate;
 
+  /// Which day the week should start?
+  /// weekStartsWith = 1 for Monday, ..., weekStartsWith = 7 for Sunday.
+  /// Default to 7 (the week starts wih Sunday).
+  final int weekStartsWith;
+
   /// The double value of every [HeatMapContainer]'s width and height.
   final double? size;
 
@@ -76,6 +81,7 @@ class HeatMapColumn extends StatelessWidget {
     required this.endDate,
     required this.colorMode,
     required this.numDays,
+    required this.weekStartsWith,
     this.size,
     this.defaultColor,
     this.datasets,

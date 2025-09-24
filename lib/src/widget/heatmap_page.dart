@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import './heatmap_month_text.dart';
 import './heatmap_column.dart';
 import '../data/heatmap_color_mode.dart';
@@ -12,10 +13,13 @@ class HeatMapPage extends StatelessWidget {
   /// List value of every sunday's month information.
   ///
   /// From 1: January to 12: December.
-  final List<int> _firstDayInfos = [];
+  final List<String> _firstDayInfos = [];
 
   /// The number of days between [startDate] and [endDate].
   final int _dateDifferent;
+
+  /// The list of localized labels for week days.
+  final List<String> _localizedWeekDayLabels = [];
 
   /// The Date value of start day of heatmap.
   ///
@@ -78,6 +82,11 @@ class HeatMapPage extends StatelessWidget {
 
   final bool? showText;
 
+  /// Which day the week should start?
+  /// weekStartsWith = 1 for Monday, ..., weekStartsWith = 7 for Sunday.
+  /// Default to 7 (the week starts wih Sunday).
+  final int weekStartsWith;
+
   HeatMapPage({
     super.key,
     required this.colorMode,
@@ -94,52 +103,68 @@ class HeatMapPage extends StatelessWidget {
     this.showText,
     this.monthTextStyle,
     this.weekTextStyle,
+    required this.weekStartsWith,
   }) : _dateDifferent = endDate.difference(startDate).inDays,
        maxValue = DatasetsUtil.getMaxValue(datasets);
 
   /// Get [HeatMapColumn] from [startDate] to [endDate].
-  List<Widget> _heatmapColumnList() {
+  List<Widget> _heatmapColumnList(String languageCode) {
     // Create empty list.
     List<Widget> columns = [];
 
     // Set cursor(position) to first day of weeks
     // until cursor reaches the final week.
     for (
-      int datePos = 0 - (startDate.weekday % 7);
+      int datePos = -((startDate.weekday - weekStartsWith) % 7);
       datePos <= _dateDifferent;
       datePos += 7
     ) {
       // Get first day of week by adding cursor's value to startDate.
       DateTime firstDay = DateUtil.changeDay(startDate, datePos);
 
-      columns.add(
-        HeatMapColumn(
-          // If last day is not saturday, week also includes future Date.
-          // So we have to make future day on last column blanck.
-          //
-          // To make empty space to future day, we have to pass this HeatMapPage's
-          // endDate to HeatMapColumn's endDate.
-          startDate: firstDay,
-          endDate: datePos <= _dateDifferent - 7
-              ? DateUtil.changeDay(startDate, datePos + 6)
-              : endDate,
-          colorMode: colorMode,
-          numDays: min(endDate.difference(firstDay).inDays + 1, 7),
-          size: size,
-          defaultColor: defaultColor,
-          colorsets: colorsets,
-          dayTextStyle: dayTextStyle,
-          borderRadius: borderRadius,
-          spacing: spacing,
-          maxValue: maxValue,
-          onClick: onClick,
-          datasets: datasets,
-          showText: showText,
-        ),
-      );
+      if (_localizedWeekDayLabels.isEmpty) {
+        // Add an empty string for the first row
+        // which is used to show the 12 month labels.
+        _localizedWeekDayLabels.add('');
+        for (var i = 0; i < 7; i++) {
+          _localizedWeekDayLabels.add(
+            DateFormat.E(languageCode).format(DateUtil.changeDay(firstDay, i)),
+          );
+        }
+      }
 
-      // also add first day's month information to _firstDayInfos list.
-      _firstDayInfos.add(firstDay.month);
+      final numDays = min(endDate.difference(firstDay).inDays + 1, 7);
+      if (numDays != 0) {
+        columns.add(
+          HeatMapColumn(
+            // If last day is not saturday, week also includes future Date.
+            // So we have to make future day on last column blanck.
+            //
+            // To make empty space to future day, we have to pass this HeatMapPage's
+            // endDate to HeatMapColumn's endDate.
+            startDate: firstDay,
+            endDate: datePos <= _dateDifferent - 7
+                ? DateUtil.changeDay(startDate, datePos + 6)
+                : endDate,
+            weekStartsWith: weekStartsWith,
+            colorMode: colorMode,
+            numDays: numDays,
+            size: size,
+            defaultColor: defaultColor,
+            colorsets: colorsets,
+            dayTextStyle: dayTextStyle,
+            borderRadius: borderRadius,
+            spacing: spacing,
+            maxValue: maxValue,
+            onClick: onClick,
+            datasets: datasets,
+            showText: showText,
+          ),
+        );
+
+        // also add first day's month information to _firstDayInfos list.
+        _firstDayInfos.add(DateFormat.MMM(languageCode).format(firstDay));
+      }
     }
 
     return columns;
@@ -147,6 +172,8 @@ class HeatMapPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageCode = Localizations.localeOf(context).languageCode;
+
     return Column(
       children: <Widget>[
         Row(
@@ -154,7 +181,11 @@ class HeatMapPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Show week labels to left side of heatmap.
-            HeatMapWeekText(size: size, textStyle: weekTextStyle),
+            HeatMapWeekText(
+              size: size,
+              textStyle: weekTextStyle,
+              weekDayLabels: _localizedWeekDayLabels,
+            ),
             Column(
               spacing: spacing!,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +200,7 @@ class HeatMapPage extends StatelessWidget {
                 // Heatmap itself.
                 Row(
                   spacing: spacing!,
-                  children: <Widget>[..._heatmapColumnList()],
+                  children: <Widget>[..._heatmapColumnList(languageCode)],
                 ),
               ],
             ),

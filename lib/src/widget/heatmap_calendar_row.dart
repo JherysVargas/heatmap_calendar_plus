@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/constants.dart';
 import '../util/datasets_util.dart';
 import './heatmap_container.dart';
 import '../data/heatmap_color_mode.dart';
@@ -17,12 +18,6 @@ class HeatMapCalendarRow extends StatelessWidget {
 
   /// The TextStyle of every [HeatMapContainer]'s day number.
   final TextStyle? dayTextStyle;
-
-  /// The List of row items.
-  ///
-  /// It includes every days of the week and
-  /// if one week doesn't have 7 days, it will be filled with [SizedBox].
-  final List<Widget> dayContainers;
 
   /// The default background color value of [HeatMapContainer]
   final Color? defaultColor;
@@ -62,11 +57,17 @@ class HeatMapCalendarRow extends StatelessWidget {
   /// Paratmeter gives clicked [DateTime] value.
   final Function(DateTime)? onClick;
 
-  HeatMapCalendarRow({
+  /// Which day the week should start?
+  /// weekStartsWith = 1 for Monday, ..., weekStartsWith = 7 for Sunday.
+  /// Default to 7 (the week starts wih Sunday).
+  final int weekStartsWith;
+
+  const HeatMapCalendarRow({
     super.key,
     required this.startDate,
     required this.endDate,
     required this.colorMode,
+    required this.weekStartsWith,
     this.size,
     this.dayTextStyle,
     this.defaultColor,
@@ -77,87 +78,19 @@ class HeatMapCalendarRow extends StatelessWidget {
     this.datasets,
     this.maxValue,
     this.onClick,
-  }) : dayContainers = List<Widget>.generate(
-         7,
-         // If current week has first day of the month and
-         // the first day is not a sunday, it must have extra space on it.
-         // Then fill it with empty Container for extra space.
-         //
-         // Do same works if current week has last day of the month and
-         // the last day is not a saturday.
-         (i) =>
-             (startDate == DateUtil.startDayOfMonth(startDate) &&
-                     endDate.day - startDate.day != 7 &&
-                     i < (startDate.weekday % 7)) ||
-                 (endDate == DateUtil.endDayOfMonth(endDate) &&
-                     endDate.day - startDate.day != 7 &&
-                     i > (endDate.weekday % 7))
-             ? Container(
-                 width: size ?? 42,
-                 height: size ?? 42,
-                 margin: EdgeInsets.all(spacing!),
-               )
-             // If the day is not a empty one then create HeatMapContainer.
-             : HeatMapContainer(
-                 // Given information about the week is that
-                 // start day of week value and end day of week.
-                 //
-                 // So we have to give every day information to each HeatMapContainer.
-                 date: DateTime(
-                   startDate.year,
-                   startDate.month,
-                   startDate.day - startDate.weekday % 7 + i,
-                 ),
-                 backgroundColor: defaultColor,
-                 size: size,
-                 textStyle: dayTextStyle,
-                 borderRadius: borderRadius,
-                 onClick: onClick,
-                 // If datasets has DateTime key which is equal to this HeatMapContainer's date,
-                 // we have to color the matched HeatMapContainer.
-                 //
-                 // If datasets is null or doesn't contains the equal DateTime value, send null.
-                 selectedColor:
-                     datasets?.keys.contains(
-                           DateTime(
-                             startDate.year,
-                             startDate.month,
-                             startDate.day - startDate.weekday % 7 + i,
-                           ),
-                         ) ??
-                         false
-                     // If colorMode is ColorMode.opacity,
-                     ? colorMode == ColorMode.opacity
-                           // Color the container with first value of colorsets
-                           // and set opacity value to current day's datasets key
-                           // devided by maxValue which is the maximum value of the month.
-                           ? colorsets?.values.first.withValues(
-                               alpha:
-                                   (datasets?[DateTime(
-                                         startDate.year,
-                                         startDate.month,
-                                         startDate.day +
-                                             i -
-                                             (startDate.weekday % 7),
-                                       )] ??
-                                       1) /
-                                   (maxValue ?? 1),
-                             )
-                           // Else if colorMode is ColorMode.Color.
-                           //
-                           // Get color value from colorsets which is filtered with DateTime value
-                           // Using DatasetsUtil.getColor()
-                           : DatasetsUtil.getColor(
-                               colorsets,
-                               datasets?[DateTime(
-                                 startDate.year,
-                                 startDate.month,
-                                 startDate.day + i - (startDate.weekday % 7),
-                               )],
-                             )
-                     : null,
-               ),
-       );
+  });
+
+  bool _isEmptyStart(int i) {
+    return (startDate == DateUtil.startDayOfMonth(startDate) &&
+        endDate.day - startDate.day != kDefaultDaysOfWeek &&
+        i < ((startDate.weekday - weekStartsWith) % kDefaultDaysOfWeek));
+  }
+
+  bool _isEmptyEnd(int i) {
+    return (endDate == DateUtil.endDayOfMonth(endDate) &&
+        endDate.day - startDate.day != kDefaultDaysOfWeek &&
+        i > ((endDate.weekday - weekStartsWith) % kDefaultDaysOfWeek));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,10 +98,72 @@ class HeatMapCalendarRow extends StatelessWidget {
       spacing: spacing!,
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        for (Widget container in dayContainers)
-          WidgetUtil.flexibleContainer(flexible ?? false, true, container),
-      ],
+      children: List<Widget>.generate(kDefaultDaysOfWeek, (i) {
+        final bool isEmpty = _isEmptyStart(i) || _isEmptyEnd(i);
+
+        return WidgetUtil.flexibleContainer(
+          isFlexible: flexible ?? false,
+          child: isEmpty
+              ? _buildEmptyContainer()
+              // If the day is not a empty one then create HeatMapContainer.
+              : _buildItemContainer(i),
+        );
+      }),
     );
+  }
+
+  Widget _buildEmptyContainer() {
+    return Container(
+      width: size ?? 42,
+      height: size ?? 42,
+      margin: EdgeInsets.all(spacing!),
+    );
+  }
+
+  Widget _buildItemContainer(int i) {
+    final date = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day +
+          i -
+          ((startDate.weekday - weekStartsWith) % kDefaultDaysOfWeek),
+    );
+
+    return HeatMapContainer(
+      // Given information about the week is that
+      // start day of week value and end day of week.
+      //
+      // So we have to give every day information to each HeatMapContainer.
+      date: date,
+      backgroundColor: defaultColor,
+      size: size,
+      textStyle: dayTextStyle,
+      borderRadius: borderRadius,
+      onClick: onClick,
+      // If datasets has DateTime key which is equal to this HeatMapContainer's date,
+      // we have to color the matched HeatMapContainer.
+      //
+      // If datasets is null or doesn't contains the equal DateTime value, send null.
+      selectedColor: _getSelectedColor(i, date),
+    );
+  }
+
+  Color? _getSelectedColor(int i, DateTime date) {
+    final dataSetFound = datasets?[date];
+
+    if (dataSetFound == null) return null;
+
+    // Color the container with first value of colorsets
+    // and set opacity value to current day's datasets key
+    // devided by maxValue which is the maximum value of the month.
+    if (colorMode == ColorMode.opacity) {
+      return colorsets?.values.first.withValues(
+        alpha: dataSetFound / (maxValue ?? 1),
+      );
+    }
+
+    // Get color value from colorsets which is filtered with DateTime value
+    // Using DatasetsUtil.getColor()
+    return DatasetsUtil.getColor(colorsets, dataSetFound);
   }
 }

@@ -66,12 +66,12 @@ class HeatMap extends StatefulWidget {
   /// Show day text in every blocks if the value is true.
   ///
   /// Default value is false.
-  final bool? showText;
+  final bool showText;
 
   /// Show color tip which represents the color range at the below.
   ///
   /// Default value is true.
-  final bool? showColorTip;
+  final bool showColorTip;
 
   /// Makes heatmap scrollable if the value is true.
   ///
@@ -93,6 +93,11 @@ class HeatMap extends StatefulWidget {
 
   /// The spacing value between tip containers and left/right widgets.
   final double colorTipSpacing;
+
+  /// Which day the week should start?
+  /// weekStartsWith = 1 for Monday, ..., weekStartsWith = 7 for Sunday.
+  /// Default to 7 (the week starts wih Sunday).
+  final int weekStartsWith;
 
   const HeatMap({
     super.key,
@@ -116,6 +121,7 @@ class HeatMap extends StatefulWidget {
     this.monthTextStyle,
     this.weekTextStyle,
     this.dayTextStyle,
+    this.weekStartsWith = kDefaultStartDayOfWeek,
   });
 
   @override
@@ -142,6 +148,7 @@ class _HeatMap extends State<HeatMap> {
         // Heatmap Widget.
         _scrollableHeatMap(
           HeatMapPage(
+            weekStartsWith: widget.weekStartsWith,
             endDate: widget.endDate ?? DateTime.now(),
             startDate:
                 widget.startDate ??
@@ -162,7 +169,7 @@ class _HeatMap extends State<HeatMap> {
         ),
 
         // Show HeatMapColorTip if showColorTip is true.
-        if (widget.showColorTip == true)
+        if (widget.showColorTip)
           HeatMapColorTip(
             colorMode: widget.colorMode,
             colorsets: widget.colorsets,

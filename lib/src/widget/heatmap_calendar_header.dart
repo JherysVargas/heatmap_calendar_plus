@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-
-import '../util/date_util.dart';
+import 'package:intl/intl.dart' show DateFormat;
 
 class HeatMapCalendarHeader extends StatelessWidget {
   const HeatMapCalendarHeader({
     super.key,
+    required this.datePattern,
     required this.changeMonth,
     this.currentDate,
     this.textStyle,
     this.margin,
   });
 
+  final String datePattern;
   final EdgeInsets? margin;
   final TextStyle? textStyle;
   final DateTime? currentDate;
@@ -18,6 +19,8 @@ class HeatMapCalendarHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageCode = Localizations.localeOf(context).languageCode;
+
     return Container(
       margin: margin,
       child: Row(
@@ -31,7 +34,10 @@ class HeatMapCalendarHeader extends StatelessWidget {
 
           // Text which shows the current year and month
           Text(
-            '${DateUtil.MONTH_LABEL[currentDate?.month ?? 0]} ${currentDate?.year}',
+            DateFormat(
+              datePattern,
+              languageCode,
+            ).format(currentDate ?? DateTime.now()),
             style: const TextStyle(fontSize: 12).merge(textStyle),
           ),
 
