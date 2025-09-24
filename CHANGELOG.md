@@ -1,20 +1,14 @@
-## 1.1.0
+## 1.0.0
 
-- **BREAKING CHANGE**: Removed deprecated props and replaced with new TextStyle-based props:
-  - Removed `textColor`, `fontSize` from `HeatMap`
-  - Removed `monthFontSize`, `weekFontSize`, `weekTextColor` from `HeatMapCalendar`
-  - Removed `margin` prop from both widgets
-- feat: Added comprehensive TextStyle support:
-  - Added `monthTextStyle`, `weekTextStyle`, `dayTextStyle` props to both `HeatMap` and `HeatMapCalendar`
-- feat: Added new spacing and layout props:
-  - Added `blockSpacing` prop to replace old margin system
-  - Added `colorTipSpacing` prop for better color tip control
-- feat: Added `HeatMapCalendar` enhancements:
-  - Added `marginHeader` prop for header margin control
-  - Added `headerBuilder` prop for custom header implementation
-  - Added `controller` prop (`HeatMapCalendarController`) for programmatic control
-- refactor: Improved default values and removed hard-coded color references
-- docs: Updated README.md with current props and removed obsolete documentation
+- Initial release of `heatmap_calendar_plus` (fork of `flutter_heatmap_calendar`).
+- Credits: Original work by Kim Seung Hwan (MIT). See `LICENSE`.
+- Includes upstream improvements equivalent to `flutter_heatmap_calendar` 1.1.0 (TextStyle props, spacing/layout props, calendar enhancements, docs refresh).
+- Package rename, metadata updates (repository, homepage, issue tracker).
+- New barrel import: `package:heatmap_calendar_plus/heatmap_calendar_plus.dart`.
+
+---
+
+Upstream history (for reference from the original package):
 
 ## 1.0.5
 

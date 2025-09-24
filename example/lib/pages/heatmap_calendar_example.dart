@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:heatmap_calendar_plus/heatmap_calendar_plus.dart';
 
 class HeatMapCalendarExample extends StatefulWidget {
   const HeatMapCalendarExample({Key? key}) : super(key: key);

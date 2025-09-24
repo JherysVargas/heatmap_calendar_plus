@@ -1,18 +1,85 @@
-# Flutter Heatmap Calendar
+# Heatmap Calendar Plus (fork)
 
-Flutter Heatmap Calendar inspired by github contribution chart.
+This package is an actively maintained fork of flutter_heatmap_calendar, inspired by GitHub’s contribution graph.
 
-Flutter Heatmap Calendar provides traditional contribution chart called `HeatMap` and calendar version of it called `HeatMapCalendar`.
+- Original package: https://pub.dev/packages/flutter_heatmap_calendar
+- Original author: Kim Seung Hwan (MIT)
+
+Heatmap Calendar Plus maintains compatibility with the existing API and continues with bug fixes and new features. It provides the traditional HeatMap widget as well as its calendar version `HeatMapCalendar`.
+
+### Migración desde `flutter_heatmap_calendar`
+
+1. Update your `pubspec.yaml` to use this fork:
+
+```yaml
+dependencies:
+  heatmap_calendar_plus: ^1.0.0
+```
+
+2. Update your imports:
+
+```diff
+- import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
++ import 'package:heatmap_calendar_plus/heatmap_calendar_plus.dart';
+```
 
 ![HeatMap](https://user-images.githubusercontent.com/4322099/147415928-76ed96fa-5a95-4a61-abec-01f32874c795.gif)
 ![HeatMapCalendar](https://user-images.githubusercontent.com/4322099/147415931-25596f1f-e3ab-47fb-a375-8384acdf8d09.gif)
 
-## Getting started
+## 🔥 Why use this fork
+
+- Actively maintained: keeps evolving with fixes, improvements, and support for modern Flutter/Dart (Dart 3 compatible).
+- Smooth migration: almost drop-in replacement with a dedicated migration section and barrel import (`heatmap_calendar_plus.dart`).
+- API modernization: consolidated TextStyle-based props (`monthTextStyle`, `weekTextStyle`, `dayTextStyle`) and clearer spacing controls (`blockSpacing`, `colorTipSpacing`).
+- More control on calendar: header customization via `headerBuilder`, header margin with `marginHeader`, and a `HeatMapCalendarController` for programmatic control.
+- Stability fixes: includes upstream fixes (overflow with startDate, DST week alignment) and general refactors.
+- Better docs and example: refreshed README and runnable example app.
+- Localization-ready: month and week labels adapt to your app locale (uses `intl`); the example includes `flutter_localizations`.
+
+## ✨ Features
+
+- Two widgets: `HeatMap` (contribution grid) and `HeatMapCalendar` (calendar view).
+- Color strategies: `ColorMode.opacity` and `ColorMode.color` with threshold-based `colorsets`.
+- Customization: `size`, `blockSpacing`, `borderRadius`, `scrollable`/`flexible`, `monthTextStyle`, `weekTextStyle`, `dayTextStyle`.
+- Interactivity: `onClick` on days and `onMonthChange` on month navigation.
+- Calendar-specific add-ons:
+  - `headerBuilder` for a custom header UI.
+  - `marginHeader` to tweak header spacing.
+  - `HeatMapCalendarController` for programmatic navigation/control.
+- Localization (i18n): month/week labels localized via `intl` following your `MaterialApp` locale.
+
+## 🌍 Localization (i18n)
+
+`heatmap_calendar_plus` utiliza `intl` para mostrar nombres de meses y etiquetas de semana según el locale de tu aplicación. Asegúrate de habilitar las localizaciones de Flutter:
+
+```dart
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+MaterialApp(
+  // Usa los delegados por defecto de Flutter
+  localizationsDelegates: GlobalMaterialLocalizations.delegates,
+
+  // Declara los locales soportados por tu app
+  supportedLocales: const [
+    Locale('en'),
+    Locale('es'),
+    // agrega tus locales...
+  ],
+
+  // Opcional: fuerza un locale específico durante pruebas/desarrollo
+  locale: const Locale('es'),
+  // ...
+)
+```
+
+El ejemplo incluido en `example/` ya viene configurado con `flutter_localizations` y `supportedLocales` para `es` y `en`.
+
+## 📦 Getting started
 
 ### Depend on it.
 
 ```
-flutter pub add flutter_heatmap_calendar
+flutter pub add heatmap_calendar_plus
 ```
 
 **or**
@@ -21,7 +88,7 @@ Add below line to your personal package's `pubspec.yaml`.
 
 ```yaml
 dependencies:
-  flutter_heatmap_calendar: ^1.0.5
+  heatmap_calendar_plus: ^1.0.0
 ```
 
 And run `flutter pub get` to install.
@@ -29,7 +96,7 @@ And run `flutter pub get` to install.
 ### Import it.
 
 ```dart
-import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:heatmap_calendar_plus/heatmap_calendar_plus.dart';
 ```
 
 ## Props
@@ -95,7 +162,7 @@ import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 ### HeatMap
 
 ```dart
-import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:heatmap_calendar_plus/heatmap_calendar_plus.dart';
 ...
 HeatMap(
   datasets: {
@@ -126,7 +193,7 @@ HeatMap(
 ### HeatMapCalendar
 
 ```dart
-import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:heatmap_calendar_plus/heatmap_calendar_plus.dart';
 ...
 HeatMapCalendar(
   defaultColor: Colors.white,
@@ -156,26 +223,4 @@ HeatMapCalendar(
 
 ## License
 
-```
-MIT License
-
-Copyright (c) 2021 Kim Seung Hwan
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+Este proyecto es un fork bajo licencia MIT del trabajo original de Kim Seung Hwan. Consulta el archivo `LICENSE` para los avisos completos.
