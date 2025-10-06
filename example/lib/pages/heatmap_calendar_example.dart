@@ -111,7 +111,7 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
                             final randomMonth = Random().nextInt(12) + 1;
                             final randomYear = Random().nextInt(5) + 2020;
 
-                            calendarController.gotToDate(
+                            calendarController.goToDate(
                               DateTime(
                                 randomYear,
                                 randomMonth,

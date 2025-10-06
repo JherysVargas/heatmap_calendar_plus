@@ -156,7 +156,7 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
     });
   }
 
-  void gotToDate(DateTime date) {
+  void goToDate(DateTime date) {
     setState(() {
       _currentDate = DateUtil.startDayOfMonth(date);
     });
@@ -243,7 +243,7 @@ class HeatMapCalendarController {
 
   void previousMonth() => _state?.changeMonth(-1);
 
-  void gotToDate(DateTime date) {
-    _state?.gotToDate(date);
+  void goToDate(DateTime date) {
+    _state?.goToDate(date);
   }
 }

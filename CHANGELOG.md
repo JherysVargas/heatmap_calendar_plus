@@ -1,3 +1,8 @@
+## 2.0.0
+
+- **Breaking change:** Renamed the controller method `gotToDate()` → `goToDate()`.
+- Fixed a typo in the method name for clarity and consistency.
+
 ## 1.0.0
 
 - Initial release of `heatmap_calendar_plus` (fork of `flutter_heatmap_calendar`).
