@@ -3,6 +3,8 @@ import './heatmap_calendar_row.dart';
 import '../util/date_util.dart';
 import '../util/datasets_util.dart';
 import '../data/heatmap_color_mode.dart';
+import '../data/heatmap_calendar_type.dart';
+import '../data/constants.dart';
 
 class HeatMapCalendarPage extends StatelessWidget {
   /// The DateTime value which contains the current calendar's date value.
@@ -20,7 +22,7 @@ class HeatMapCalendarPage extends StatelessWidget {
   final List<Map<DateTime, DateTime>> separatedDate;
 
   /// The spacing value for every block.
-  final double? spacing;
+  final double spacing;
 
   /// Make block size flexible if value is true.
   final bool? flexible;
@@ -63,6 +65,16 @@ class HeatMapCalendarPage extends StatelessWidget {
   /// Paratmeter gives clicked [DateTime] value.
   final Function(DateTime)? onClick;
 
+  /// The calendar view type.
+  ///
+  /// Default value is [HeatmapCalendarType.month].
+  final HeatmapCalendarType type;
+
+  /// Show day text in every block if value is true.
+  ///
+  /// Default value is true (via [HeatMapContainer] default).
+  final bool? showText;
+
   HeatMapCalendarPage({
     super.key,
     required this.baseDate,
@@ -72,22 +84,77 @@ class HeatMapCalendarPage extends StatelessWidget {
     this.size,
     this.dayTextStyle,
     this.defaultColor,
-    this.spacing,
+    this.spacing = kDefaultSpacingBlock,
     this.datasets,
     this.colorsets,
     this.borderRadius,
     this.onClick,
+    this.type = HeatmapCalendarType.month,
+    this.showText,
   }) : separatedDate = DateUtil.separatedMonth(baseDate, weekStartsWith),
        maxValue = DatasetsUtil.getMaxValue(
          DatasetsUtil.filterMonth(datasets, baseDate),
        );
 
-  @override
-  Widget build(BuildContext context) {
+  // ─── helpers ─────────────────────────────────────────────────────────────
+
+  HeatMapCalendarRow _buildRow({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) {
+    return HeatMapCalendarRow(
+      startDate: startDate,
+      endDate: endDate,
+      colorMode: colorMode,
+      size: size,
+      weekStartsWith: weekStartsWith,
+      dayTextStyle: dayTextStyle,
+      defaultColor: defaultColor,
+      colorsets: colorsets,
+      borderRadius: borderRadius,
+      flexible: flexible,
+      spacing: spacing,
+      maxValue: maxValue,
+      onClick: onClick,
+      showText: showText,
+      datasets: DatasetsUtil.filterDateRange(datasets, startDate, endDate),
+    );
+  }
+
+  // ─── build paths ─────────────────────────────────────────────────────────
+
+  Widget _buildWeekView() {
+    final start = DateUtil.startDayOfWeek(baseDate, weekStartsWith);
+    final end = DateUtil.endDayOfWeek(baseDate, weekStartsWith);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: _buildRow(startDate: start, endDate: end),
+    );
+  }
+
+  Widget _buildBiweekView() {
+    final week1Start = DateUtil.startDayOfWeek(baseDate, weekStartsWith);
+    final week1End = DateUtil.endDayOfWeek(baseDate, weekStartsWith);
+    final week2Start = DateUtil.changeDay(week1Start, 7);
+    final week2End = DateUtil.changeDay(week1End, 7);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Column(
-        spacing: spacing!,
+        spacing: spacing,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildRow(startDate: week1Start, endDate: week1End),
+          _buildRow(startDate: week2Start, endDate: week2End),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonthView() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Column(
+        spacing: spacing,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           for (var date in separatedDate)
@@ -105,6 +172,7 @@ class HeatMapCalendarPage extends StatelessWidget {
               spacing: spacing,
               maxValue: maxValue,
               onClick: onClick,
+              showText: showText,
               datasets: Map.from(datasets ?? {})
                 ..removeWhere(
                   (key, value) =>
@@ -117,5 +185,18 @@ class HeatMapCalendarPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    switch (type) {
+      case HeatmapCalendarType.week:
+        return _buildWeekView();
+      case HeatmapCalendarType.biweek:
+        return _buildBiweekView();
+      case HeatmapCalendarType.month:
+      case HeatmapCalendarType.year:
+        return _buildMonthView();
+    }
   }
 }

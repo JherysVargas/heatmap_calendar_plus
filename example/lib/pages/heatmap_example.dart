@@ -58,6 +58,8 @@ class _HeatMapExample extends State<HeatMapExample> {
                 padding: const EdgeInsets.all(20),
                 child: HeatMap(
                   scrollable: true,
+                  showText: false,
+                  reversed: false,
                   colorMode:
                       isOpacityMode ? ColorMode.opacity : ColorMode.color,
                   datasets: heatMapDatasets,

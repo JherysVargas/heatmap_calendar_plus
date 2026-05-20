@@ -34,7 +34,7 @@ class HeatMapCalendarRow extends StatelessWidget {
   final bool? flexible;
 
   /// The spacing value for every block.
-  final double? spacing;
+  final double spacing;
 
   /// The datasets which fill blocks based on its value.
   ///
@@ -62,6 +62,11 @@ class HeatMapCalendarRow extends StatelessWidget {
   /// Default to 7 (the week starts wih Sunday).
   final int weekStartsWith;
 
+  /// Show day text in every block if value is true.
+  ///
+  /// Default value is true (via [HeatMapContainer] default).
+  final bool? showText;
+
   const HeatMapCalendarRow({
     super.key,
     required this.startDate,
@@ -74,10 +79,11 @@ class HeatMapCalendarRow extends StatelessWidget {
     this.colorsets,
     this.borderRadius,
     this.flexible,
-    this.spacing,
+    this.spacing = kDefaultSpacingBlock,
     this.datasets,
     this.maxValue,
     this.onClick,
+    this.showText,
   });
 
   bool _isEmptyStart(int i) {
@@ -95,8 +101,7 @@ class HeatMapCalendarRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      spacing: spacing!,
-      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: spacing,
       mainAxisSize: MainAxisSize.min,
       children: List<Widget>.generate(kDefaultDaysOfWeek, (i) {
         final bool isEmpty = _isEmptyStart(i) || _isEmptyEnd(i);
@@ -113,11 +118,7 @@ class HeatMapCalendarRow extends StatelessWidget {
   }
 
   Widget _buildEmptyContainer() {
-    return Container(
-      width: size ?? 42,
-      height: size ?? 42,
-      margin: EdgeInsets.all(spacing!),
-    );
+    return SizedBox(width: size ?? 42, height: size ?? 42);
   }
 
   Widget _buildItemContainer(int i) {
@@ -140,6 +141,7 @@ class HeatMapCalendarRow extends StatelessWidget {
       textStyle: dayTextStyle,
       borderRadius: borderRadius,
       onClick: onClick,
+      showText: showText,
       // If datasets has DateTime key which is equal to this HeatMapContainer's date,
       // we have to color the matched HeatMapContainer.
       //

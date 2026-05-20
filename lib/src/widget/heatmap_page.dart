@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import './heatmap_month_text.dart';
 import './heatmap_column.dart';
+import '../data/constants.dart';
 import '../data/heatmap_color_mode.dart';
 import '../util/datasets_util.dart';
 import '../util/date_util.dart';
@@ -50,7 +51,7 @@ class HeatMapPage extends StatelessWidget {
   final Map<DateTime, int>? datasets;
 
   /// The spacing value for every block.
-  final double? spacing;
+  final double spacing;
 
   /// The default background color value of every blocks.
   final Color? defaultColor;
@@ -99,7 +100,7 @@ class HeatMapPage extends StatelessWidget {
     this.colorsets,
     this.borderRadius,
     this.onClick,
-    this.spacing,
+    this.spacing = kDefaultSpacingBlock,
     this.showText,
     this.monthTextStyle,
     this.weekTextStyle,
@@ -177,7 +178,7 @@ class HeatMapPage extends StatelessWidget {
     return Column(
       children: <Widget>[
         Row(
-          spacing: spacing!,
+          spacing: spacing,
           mainAxisSize: MainAxisSize.min,
           children: [
             // Show week labels to left side of heatmap.
@@ -187,7 +188,7 @@ class HeatMapPage extends StatelessWidget {
               weekDayLabels: _localizedWeekDayLabels,
             ),
             Column(
-              spacing: spacing!,
+              spacing: spacing,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Show month labels to top of heatmap.
@@ -199,7 +200,7 @@ class HeatMapPage extends StatelessWidget {
 
                 // Heatmap itself.
                 Row(
-                  spacing: spacing!,
+                  spacing: spacing,
                   children: <Widget>[..._heatmapColumnList(languageCode)],
                 ),
               ],

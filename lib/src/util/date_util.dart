@@ -58,4 +58,17 @@ class DateUtil {
         referenceDate.month + monthCount,
         referenceDate.day,
       );
+
+  /// Get the start day of the week containing [date].
+  /// [weekStartsWith] = 1 for Monday, ..., 7 for Sunday.
+  static DateTime startDayOfWeek(DateTime date, int weekStartsWith) {
+    final offset = (date.weekday - weekStartsWith) % 7;
+    return changeDay(date, -offset);
+  }
+
+  /// Get the end day of the week containing [date].
+  /// Returns [startDayOfWeek] + 6 days.
+  static DateTime endDayOfWeek(DateTime date, int weekStartsWith) {
+    return changeDay(startDayOfWeek(date, weekStartsWith), 6);
+  }
 }

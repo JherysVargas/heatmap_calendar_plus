@@ -99,6 +99,10 @@ class HeatMap extends StatefulWidget {
   /// Default to 7 (the week starts wih Sunday).
   final int weekStartsWith;
 
+  /// Reverse the order of the heatmap when [scrollable] is true.
+  /// Default value is true, which means the heatmap will be reversed when scrollable is true.
+  final bool reversed;
+
   const HeatMap({
     super.key,
     required this.colorsets,
@@ -122,6 +126,7 @@ class HeatMap extends StatefulWidget {
     this.weekTextStyle,
     this.dayTextStyle,
     this.weekStartsWith = kDefaultStartDayOfWeek,
+    this.reversed = true,
   });
 
   @override
@@ -133,7 +138,7 @@ class _HeatMap extends State<HeatMap> {
   Widget _scrollableHeatMap(Widget child) {
     return widget.scrollable
         ? SingleChildScrollView(
-            reverse: true,
+            reverse: widget.reversed,
             scrollDirection: Axis.horizontal,
             child: child,
           )

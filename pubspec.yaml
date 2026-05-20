@@ -1,12 +1,12 @@
 name: heatmap_calendar_plus
 description: A customizable heatmap-style calendar widget for Flutter. Fork of flutter_heatmap_calendar, actively maintained with updates, bug fixes, and new features.
-version: 2.0.0
+version: 2.1.0
 repository: https://github.com/JherysVargas/heatmap_calendar_plus
 homepage: https://github.com/JherysVargas/heatmap_calendar_plus
 issue_tracker: https://github.com/JherysVargas/heatmap_calendar_plus/issues
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.11.3
   flutter: ">=1.17.0"
 
 dependencies:
@@ -17,6 +17,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:

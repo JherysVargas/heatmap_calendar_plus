@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import './data/heatmap_color_mode.dart';
+import './data/heatmap_calendar_type.dart';
+import './heatmap.dart';
 import './widget/heatmap_calendar_page.dart';
 import './widget/heatmap_color_tip.dart';
 import './util/date_util.dart';
@@ -32,10 +34,10 @@ class HeatMapCalendar extends StatefulWidget {
   final double? borderRadius;
 
   /// The date values of initial year and month.
-  final DateTime? initDate;
+  final DateTime? startDate;
 
   /// The double value of every block's size.
-  final double? size;
+  final double size;
 
   /// The TextTtyle of month header.
   final TextStyle? monthTextStyle;
@@ -106,13 +108,45 @@ class HeatMapCalendar extends StatefulWidget {
   /// The date format pattern of date header.
   final String datePattern;
 
+  /// The calendar view type.
+  ///
+  /// - [HeatmapCalendarType.month] (default): monthly calendar — non-breaking.
+  /// - [HeatmapCalendarType.week]: single-week view (7 blocks).
+  /// - [HeatmapCalendarType.biweek]: two-week view (14 blocks).
+  /// - [HeatmapCalendarType.year]: delegates to [HeatMap] (full-year heatmap).
+  final HeatmapCalendarType type;
+
+  /// The end date for the year heatmap view ([HeatmapCalendarType.year]).
+  ///
+  /// Only used when [type] is [HeatmapCalendarType.year].
+  /// Defaults to [DateTime.now] inside [HeatMap].
+  final DateTime? endDate;
+
+  /// Reverse scroll direction when [scrollable] is true.
+  ///
+  /// Only used when [type] is [HeatmapCalendarType.year].
+  /// Default value is true.
+  final bool reversed;
+
+  /// Makes the year heatmap scrollable.
+  ///
+  /// Only used when [type] is [HeatmapCalendarType.year].
+  /// Default value is false.
+  final bool scrollable;
+
+  /// Show day text in every block if value is true.
+  ///
+  /// When null, defaults to true for [HeatmapCalendarType.month]/week/biweek
+  /// and false for [HeatmapCalendarType.year] (matching [HeatMap] default).
+  final bool? showText;
+
   const HeatMapCalendar({
     super.key,
     required this.colorsets,
     this.colorMode = ColorMode.opacity,
     this.defaultColor,
     this.datasets,
-    this.initDate,
+    this.startDate,
     this.size = kDefaultBlockSizeCalendar,
     this.monthTextStyle,
     this.weekTextStyle,
@@ -132,6 +166,11 @@ class HeatMapCalendar extends StatefulWidget {
     this.controller,
     this.datePattern = kDefaultDatePatternCalendar,
     this.weekStartsWith = kDefaultStartDayOfWeek,
+    this.type = HeatmapCalendarType.month,
+    this.endDate,
+    this.reversed = true,
+    this.scrollable = true,
+    this.showText,
   });
 
   @override
@@ -139,7 +178,9 @@ class HeatMapCalendar extends StatefulWidget {
 }
 
 class _HeatMapCalendarState extends State<HeatMapCalendar> {
-  // The DateTime value of first day of the current month.
+  // The DateTime value of the current reference date.
+  // For month view: first day of the current month.
+  // For week/biweek view: the actual reference date (any day of the week).
   DateTime? _currentDate;
 
   @override
@@ -148,29 +189,83 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
     setState(() {
       // Link controller with this state.
       widget.controller?._state = this;
-      // Set _currentDate value to first day of initialized date or
-      // today's month if widget.initDate is null.
-      _currentDate = DateUtil.startDayOfMonth(
-        widget.initDate ?? DateTime.now(),
-      );
+      // For month/year view: anchor to the first day of the month.
+      // For week/biweek view: keep the raw date so startDayOfWeek is computed correctly.
+      final base = widget.startDate ?? DateTime.now();
+      _currentDate =
+          (widget.type == HeatmapCalendarType.month ||
+              widget.type == HeatmapCalendarType.year)
+          ? DateUtil.startDayOfMonth(base)
+          : base;
     });
   }
 
   void goToDate(DateTime date) {
     setState(() {
-      _currentDate = DateUtil.startDayOfMonth(date);
+      _currentDate =
+          (widget.type == HeatmapCalendarType.month ||
+              widget.type == HeatmapCalendarType.year)
+          ? DateUtil.startDayOfMonth(date)
+          : date;
     });
     widget.onMonthChange?.call(_currentDate!);
   }
 
-  void changeMonth(int direction) {
+  void changePeriod(int direction) {
     setState(() {
-      _currentDate = DateUtil.changeMonth(
-        _currentDate ?? DateTime.now(),
-        direction,
-      );
+      final base = _currentDate ?? DateTime.now();
+      _currentDate = switch (widget.type) {
+        HeatmapCalendarType.week => DateUtil.changeDay(base, direction * 7),
+        HeatmapCalendarType.biweek => DateUtil.changeDay(base, direction * 14),
+        _ => DateUtil.changeMonth(base, direction),
+      };
     });
     widget.onMonthChange?.call(_currentDate!);
+  }
+
+  /// Returns the effective date pattern for the header.
+  ///
+  /// For week/biweek views, falls back to [kDefaultDatePatternWeek] when the
+  /// user did not override [datePattern] (i.e. it is still the month default).
+  String get _effectiveDatePattern {
+    final isWeekType =
+        widget.type == HeatmapCalendarType.week ||
+        widget.type == HeatmapCalendarType.biweek;
+    final isDefaultPattern = widget.datePattern == kDefaultDatePatternCalendar;
+    return (isWeekType && isDefaultPattern)
+        ? kDefaultDatePatternWeek
+        : widget.datePattern;
+  }
+
+  /// Computes the header start date for week/biweek range display.
+  ///
+  /// Anchors to [DateUtil.startDayOfWeek] so the header is always consistent
+  /// with the content rows rendered by [HeatMapCalendarPage].
+  DateTime? get _headerStartDate {
+    if (_currentDate == null) return null;
+    return switch (widget.type) {
+      HeatmapCalendarType.week ||
+      HeatmapCalendarType.biweek =>
+        DateUtil.startDayOfWeek(_currentDate!, widget.weekStartsWith),
+      _ => _currentDate,
+    };
+  }
+
+  /// Computes the header end date for week/biweek range display.
+  DateTime? get _headerEndDate {
+    final start = _headerStartDate;
+    if (start == null) return null;
+    return switch (widget.type) {
+      HeatmapCalendarType.week => DateUtil.endDayOfWeek(
+        start,
+        widget.weekStartsWith,
+      ),
+      HeatmapCalendarType.biweek => DateUtil.changeDay(
+        DateUtil.endDayOfWeek(start, widget.weekStartsWith),
+        7,
+      ),
+      _ => null,
+    };
   }
 
   Widget _buildHeader() {
@@ -180,10 +275,12 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
 
     return HeatMapCalendarHeader(
       margin: widget.marginHeader,
-      currentDate: _currentDate,
-      changeMonth: changeMonth,
-      datePattern: widget.datePattern,
+      currentDate: _headerStartDate,
+      endDate: _headerEndDate,
+      changeMonth: changePeriod,
+      datePattern: _effectiveDatePattern,
       textStyle: widget.monthTextStyle,
+      type: widget.type,
     );
   }
 
@@ -191,8 +288,40 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
   Widget _intrinsicWidth({required Widget child}) =>
       (widget.flexible) ? child : IntrinsicWidth(child: child);
 
+  /// Build the year heatmap view by delegating to [HeatMap].
+  Widget _buildYearView() {
+    return HeatMap(
+      colorsets: widget.colorsets,
+      colorMode: widget.colorMode,
+      startDate: widget.startDate,
+      endDate: widget.endDate,
+      datasets: widget.datasets,
+      defaultColor: widget.defaultColor,
+      size: widget.size / 2,
+      monthTextStyle: widget.monthTextStyle,
+      weekTextStyle: widget.weekTextStyle,
+      dayTextStyle: widget.dayTextStyle,
+      borderRadius: widget.borderRadius,
+      blockSpacing: widget.blockSpacing,
+      onClick: widget.onClick,
+      showText: widget.showText ?? false,
+      showColorTip: widget.showColorTip,
+      colorTipHelper: widget.colorTipHelper,
+      colorTipCount: widget.colorTipCount,
+      colorTipSize: widget.colorTipSize,
+      colorTipSpacing: widget.colorTipSpacing,
+      weekStartsWith: widget.weekStartsWith,
+      scrollable: widget.scrollable,
+      reversed: widget.reversed,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.type == HeatmapCalendarType.year) {
+      return _buildYearView();
+    }
+
     return _intrinsicWidth(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -217,6 +346,8 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
             colorsets: widget.colorsets,
             borderRadius: widget.borderRadius,
             onClick: widget.onClick,
+            type: widget.type,
+            showText: widget.showText,
           ),
           if (widget.showColorTip)
             HeatMapColorTip(
@@ -239,9 +370,9 @@ class HeatMapCalendarController {
 
   DateTime? get currentDate => _state?._currentDate;
 
-  void nextMonth() => _state?.changeMonth(1);
+  void nextMonth() => _state?.changePeriod(1);
 
-  void previousMonth() => _state?.changeMonth(-1);
+  void previousMonth() => _state?.changePeriod(-1);
 
   void goToDate(DateTime date) {
     _state?.goToDate(date);

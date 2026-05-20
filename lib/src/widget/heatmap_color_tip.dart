@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import '../data/constants.dart';
 import '../data/heatmap_color_mode.dart';
 import '../data/heatmap_color.dart';
 
@@ -21,13 +22,21 @@ class HeatMapColorTip extends StatelessWidget {
 
   /// The widget which shows left side of [HeatMapColorTip].
   ///
-  /// If the value is null then show default 'less' [Text].
+  /// If the value is null then show [defaultLeftLabel] if set.
   final Widget? leftWidget;
 
   /// The widget which shows right side of [HeatMapColorTip].
   ///
-  /// If the value is null then show default 'more' [Text].
+  /// If the value is null then show [defaultRightLabel] if set.
   final Widget? rightWidget;
+
+  /// Default label text shown on the left when [leftWidget] is null.
+  /// When null, no left label is rendered.
+  final String? defaultLeftLabel;
+
+  /// Default label text shown on the right when [rightWidget] is null.
+  /// When null, no right label is rendered.
+  final String? defaultRightLabel;
 
   /// The integer value of color tip containers count.
   final int? containerCount;
@@ -36,7 +45,7 @@ class HeatMapColorTip extends StatelessWidget {
   final double? size;
 
   /// The spacing value between tip containers and left/right widgets.
-  final double? spacing;
+  final double spacing;
 
   const HeatMapColorTip({
     super.key,
@@ -44,9 +53,11 @@ class HeatMapColorTip extends StatelessWidget {
     this.colorsets,
     this.leftWidget,
     this.rightWidget,
+    this.defaultLeftLabel,
+    this.defaultRightLabel,
     this.containerCount,
     this.size,
-    this.spacing,
+    this.spacing = kDefaultSpacingTip,
   });
 
   /// It returns the List of tip container.
@@ -118,16 +129,19 @@ class HeatMapColorTip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final leftEffective =
+        leftWidget ??
+        (defaultLeftLabel != null ? _defaultText(defaultLeftLabel!) : null);
+    final rightEffective =
+        rightWidget ??
+        (defaultRightLabel != null ? _defaultText(defaultRightLabel!) : null);
+
     return Padding(
       padding: const EdgeInsets.only(top: 6.0),
       child: Row(
-        spacing: spacing!,
+        spacing: spacing,
         mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
-          leftWidget ?? _defaultText('less'),
-          _heatmapList(),
-          rightWidget ?? _defaultText('more'),
-        ],
+        children: <Widget>[?leftEffective, _heatmapList(), ?rightEffective],
       ),
     );
   }

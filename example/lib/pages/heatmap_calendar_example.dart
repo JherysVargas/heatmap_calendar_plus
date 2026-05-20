@@ -12,6 +12,8 @@ class HeatMapCalendarExample extends StatefulWidget {
 }
 
 class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
+  HeatmapCalendarType calendarType = HeatmapCalendarType.week;
+
   final TextEditingController dateController = TextEditingController();
   final TextEditingController heatLevelController = TextEditingController();
 
@@ -47,15 +49,71 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
     );
   }
 
+  Widget _textButton(String text) {
+    return Text(
+      text,
+      style: const TextStyle(color: Colors.black, fontSize: 12),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Heatmap Calendar'),
       ),
-      body: SafeArea(
+      body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(
+              height: 50,
+              child: Row(
+                spacing: 8,
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          calendarType = HeatmapCalendarType.week;
+                        });
+                      },
+                      child: _textButton('Week'),
+                    ),
+                  ),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          calendarType = HeatmapCalendarType.biweek;
+                        });
+                      },
+                      child: _textButton('Biweek'),
+                    ),
+                  ),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          calendarType = HeatmapCalendarType.month;
+                        });
+                      },
+                      child: _textButton('Month'),
+                    ),
+                  ),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          calendarType = HeatmapCalendarType.year;
+                        });
+                      },
+                      child: _textButton('Year'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             Card(
               margin: const EdgeInsets.all(20),
               elevation: 20,
@@ -65,18 +123,18 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
                 // HeatMapCalendar
                 child: HeatMapCalendar(
                   flexible: true,
-                  initDate: DateTime(2020, 6, 1),
+                  type: calendarType,
                   controller: calendarController,
                   datasets: heatMapDatasets,
+                  reversed: false,
                   colorMode:
                       isOpacityMode ? ColorMode.opacity : ColorMode.color,
                   monthTextStyle: const TextStyle(
                     fontSize: 16,
                     color: Colors.black,
                   ),
-                  datePattern: 'yyyy-MM-dd',
                   blockSpacing: 6,
-                  // weekStartsWith: 1,
+                  weekStartsWith: 1,
                   marginHeader: const EdgeInsets.only(bottom: 10),
                   colorsets: const {
                     1: Colors.red,

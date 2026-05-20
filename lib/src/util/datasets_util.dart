@@ -39,4 +39,16 @@ class DatasetsUtil {
 
     return colorsets?[result];
   }
+
+  /// Filter [datasets] to only include entries between [startDate] and [endDate] (inclusive).
+  static Map<DateTime, int> filterDateRange(
+    Map<DateTime, int>? datasets,
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    return Map.from(datasets ?? {})
+      ..removeWhere(
+        (date, _) => date.isBefore(startDate) || date.isAfter(endDate),
+      );
+  }
 }

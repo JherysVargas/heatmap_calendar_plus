@@ -1,3 +1,11 @@
+## 2.1.0
+
+- Fixed color alignment bug in `HeatMapColumn` for non-default `weekStartsWith` values.
+- Fixed null-safety crashes when `spacing` was not explicitly passed to internal widgets.
+- Added `type` parameter to `HeatMapCalendar` with `HeatmapCalendarType` enum (`week`, `biweek`, `month`, `year`). Default is `month` — fully non-breaking.
+- Added `showText`, `endDate`, `scrollable`, and `reversed` parameters to `HeatMapCalendar`.
+- Added `defaultLeftLabel` / `defaultRightLabel` parameters to `HeatMapColorTip` (default `null` — no labels rendered unless provided).
+
 ## 2.0.0
 
 - **Breaking change:** Renamed the controller method `gotToDate()` → `goToDate()`.
