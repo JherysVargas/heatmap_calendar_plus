@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/constants.dart';
+import '../data/heatmap_cell_style.dart';
 import '../util/datasets_util.dart';
 import './heatmap_container.dart';
 import '../data/heatmap_color_mode.dart';
@@ -67,6 +68,14 @@ class HeatMapCalendarRow extends StatelessWidget {
   /// Default value is true (via [HeatMapContainer] default).
   final bool? showText;
 
+  /// Optional per-cell style resolver.
+  ///
+  /// When provided, it is called for each cell's date. If it returns a
+  /// [HeatMapCellStyle] with a non-null [HeatMapCellStyle.color], that color
+  /// takes full priority over the [colorsets] / [colorMode] logic.
+  /// Returning `null` falls back to the default threshold-based coloring.
+  final HeatMapCellStyleResolver? cellStyleResolver;
+
   const HeatMapCalendarRow({
     super.key,
     required this.startDate,
@@ -84,6 +93,7 @@ class HeatMapCalendarRow extends StatelessWidget {
     this.maxValue,
     this.onClick,
     this.showText,
+    this.cellStyleResolver,
   });
 
   bool _isEmptyStart(int i) {
@@ -151,6 +161,11 @@ class HeatMapCalendarRow extends StatelessWidget {
   }
 
   Color? _getSelectedColor(int i, DateTime date) {
+    // 1. Per-cell resolver takes full priority when it returns a non-null color.
+    final resolved = cellStyleResolver?.call(date);
+    if (resolved?.color != null) return resolved!.color;
+
+    // 2. Fallback: threshold-based coloring via datasets + colorsets.
     final dataSetFound = datasets?[date];
 
     if (dataSetFound == null) return null;

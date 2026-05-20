@@ -6,6 +6,7 @@ import './heatmap_month_text.dart';
 import './heatmap_column.dart';
 import '../data/constants.dart';
 import '../data/heatmap_color_mode.dart';
+import '../data/heatmap_cell_style.dart';
 import '../util/datasets_util.dart';
 import '../util/date_util.dart';
 import './heatmap_week_text.dart';
@@ -83,6 +84,11 @@ class HeatMapPage extends StatelessWidget {
 
   final bool? showText;
 
+  /// Optional per-cell style resolver. Propagated to every [HeatMapColumn].
+  ///
+  /// See [HeatMapCellStyleResolver] for full documentation.
+  final HeatMapCellStyleResolver? cellStyleResolver;
+
   /// Which day the week should start?
   /// weekStartsWith = 1 for Monday, ..., weekStartsWith = 7 for Sunday.
   /// Default to 7 (the week starts wih Sunday).
@@ -105,6 +111,7 @@ class HeatMapPage extends StatelessWidget {
     this.monthTextStyle,
     this.weekTextStyle,
     required this.weekStartsWith,
+    this.cellStyleResolver,
   }) : _dateDifferent = endDate.difference(startDate).inDays,
        maxValue = DatasetsUtil.getMaxValue(datasets);
 
@@ -138,11 +145,6 @@ class HeatMapPage extends StatelessWidget {
       if (numDays != 0) {
         columns.add(
           HeatMapColumn(
-            // If last day is not saturday, week also includes future Date.
-            // So we have to make future day on last column blanck.
-            //
-            // To make empty space to future day, we have to pass this HeatMapPage's
-            // endDate to HeatMapColumn's endDate.
             startDate: firstDay,
             endDate: datePos <= _dateDifferent - 7
                 ? DateUtil.changeDay(startDate, datePos + 6)
@@ -160,6 +162,7 @@ class HeatMapPage extends StatelessWidget {
             onClick: onClick,
             datasets: datasets,
             showText: showText,
+            cellStyleResolver: cellStyleResolver,
           ),
         );
 

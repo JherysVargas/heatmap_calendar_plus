@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'pages/heatmap_calendar_example.dart';
 import 'pages/heatmap_example.dart';
+import 'pages/heatmap_cell_style_resolver_example.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,7 +11,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,6 +29,8 @@ class MyApp extends StatelessWidget {
         '/': (context) => const MyHomePage(),
         '/heatmap_calendar': (context) => const HeatMapCalendarExample(),
         '/heatmap': (context) => const HeatMapExample(),
+        '/cell_style_resolver': (context) =>
+            const HeatMapCellStyleResolverExample(),
       },
     );
   }
@@ -56,6 +58,14 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               title: const Text('Heatmap'),
               onTap: () => Navigator.of(context).pushNamed('/heatmap'),
+            ),
+            ListTile(
+              title: const Text('Cell Style Resolver'),
+              subtitle: const Text(
+                'Per-cell color override via cellStyleResolver',
+              ),
+              onTap: () =>
+                  Navigator.of(context).pushNamed('/cell_style_resolver'),
             ),
           ],
         ),

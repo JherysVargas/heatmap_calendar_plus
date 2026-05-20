@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import './data/heatmap_color_mode.dart';
 import './data/heatmap_calendar_type.dart';
+import './data/heatmap_cell_style.dart';
 import './heatmap.dart';
 import './widget/heatmap_calendar_page.dart';
 import './widget/heatmap_color_tip.dart';
@@ -140,6 +141,29 @@ class HeatMapCalendar extends StatefulWidget {
   /// and false for [HeatmapCalendarType.year] (matching [HeatMap] default).
   final bool? showText;
 
+  /// Optional per-cell style resolver.
+  ///
+  /// When provided, it is called for each cell's [DateTime]. If it returns a
+  /// [HeatMapCellStyle] with a non-null [HeatMapCellStyle.color], that color
+  /// takes full priority over the global [colorsets] / [colorMode] logic for
+  /// that specific date. Returning `null` (or a style with `color: null`) falls
+  /// back to the default threshold-based coloring.
+  ///
+  /// This works for all calendar types: `month`, `week`, `biweek`, and `year`.
+  ///
+  /// Example — color cells green when income exceeds expense, red otherwise:
+  /// ```dart
+  /// cellStyleResolver: (date) {
+  ///   final income = getIncome(date);
+  ///   final expense = getExpense(date);
+  ///   if (income == 0 && expense == 0) return null;
+  ///   return HeatMapCellStyle(
+  ///     color: income > expense ? Colors.green : Colors.red,
+  ///   );
+  /// },
+  /// ```
+  final HeatMapCellStyleResolver? cellStyleResolver;
+
   const HeatMapCalendar({
     super.key,
     required this.colorsets,
@@ -171,6 +195,7 @@ class HeatMapCalendar extends StatefulWidget {
     this.reversed = true,
     this.scrollable = true,
     this.showText,
+    this.cellStyleResolver,
   });
 
   @override
@@ -313,6 +338,7 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
       weekStartsWith: widget.weekStartsWith,
       scrollable: widget.scrollable,
       reversed: widget.reversed,
+      cellStyleResolver: widget.cellStyleResolver,
     );
   }
 
@@ -348,6 +374,7 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
             onClick: widget.onClick,
             type: widget.type,
             showText: widget.showText,
+            cellStyleResolver: widget.cellStyleResolver,
           ),
           if (widget.showColorTip)
             HeatMapColorTip(

@@ -4,6 +4,7 @@ import '../util/date_util.dart';
 import '../util/datasets_util.dart';
 import '../data/heatmap_color_mode.dart';
 import '../data/heatmap_calendar_type.dart';
+import '../data/heatmap_cell_style.dart';
 import '../data/constants.dart';
 
 class HeatMapCalendarPage extends StatelessWidget {
@@ -75,6 +76,11 @@ class HeatMapCalendarPage extends StatelessWidget {
   /// Default value is true (via [HeatMapContainer] default).
   final bool? showText;
 
+  /// Optional per-cell style resolver. Propagated to every [HeatMapCalendarRow].
+  ///
+  /// See [HeatMapCellStyleResolver] for full documentation.
+  final HeatMapCellStyleResolver? cellStyleResolver;
+
   HeatMapCalendarPage({
     super.key,
     required this.baseDate,
@@ -91,6 +97,7 @@ class HeatMapCalendarPage extends StatelessWidget {
     this.onClick,
     this.type = HeatmapCalendarType.month,
     this.showText,
+    this.cellStyleResolver,
   }) : separatedDate = DateUtil.separatedMonth(baseDate, weekStartsWith),
        maxValue = DatasetsUtil.getMaxValue(
          DatasetsUtil.filterMonth(datasets, baseDate),
@@ -117,6 +124,7 @@ class HeatMapCalendarPage extends StatelessWidget {
       maxValue: maxValue,
       onClick: onClick,
       showText: showText,
+      cellStyleResolver: cellStyleResolver,
       datasets: DatasetsUtil.filterDateRange(datasets, startDate, endDate),
     );
   }
@@ -173,6 +181,7 @@ class HeatMapCalendarPage extends StatelessWidget {
               maxValue: maxValue,
               onClick: onClick,
               showText: showText,
+              cellStyleResolver: cellStyleResolver,
               datasets: Map.from(datasets ?? {})
                 ..removeWhere(
                   (key, value) =>

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import './data/heatmap_color_mode.dart';
+import './data/heatmap_cell_style.dart';
 import './widget/heatmap_page.dart';
 import './widget/heatmap_color_tip.dart';
-import './data/heatmap_color_mode.dart';
 import './util/date_util.dart';
 import './data/constants.dart';
 
@@ -103,6 +104,14 @@ class HeatMap extends StatefulWidget {
   /// Default value is true, which means the heatmap will be reversed when scrollable is true.
   final bool reversed;
 
+  /// Optional per-cell style resolver.
+  ///
+  /// When provided, it is called for each cell's [DateTime]. If it returns a
+  /// [HeatMapCellStyle] with a non-null [HeatMapCellStyle.color], that color
+  /// takes full priority over the global [colorsets] / [colorMode] logic for
+  /// that specific date. Returning `null` falls back to the default coloring.
+  final HeatMapCellStyleResolver? cellStyleResolver;
+
   const HeatMap({
     super.key,
     required this.colorsets,
@@ -127,6 +136,7 @@ class HeatMap extends StatefulWidget {
     this.dayTextStyle,
     this.weekStartsWith = kDefaultStartDayOfWeek,
     this.reversed = true,
+    this.cellStyleResolver,
   });
 
   @override
@@ -170,6 +180,7 @@ class _HeatMap extends State<HeatMap> {
             onClick: widget.onClick,
             spacing: widget.blockSpacing,
             showText: widget.showText,
+            cellStyleResolver: widget.cellStyleResolver,
           ),
         ),
 

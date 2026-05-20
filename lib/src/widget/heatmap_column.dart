@@ -3,6 +3,7 @@ import './heatmap_container.dart';
 import '../util/date_util.dart';
 import '../util/datasets_util.dart';
 import '../data/heatmap_color_mode.dart';
+import '../data/heatmap_cell_style.dart';
 import '../data/constants.dart';
 
 class HeatMapColumn extends StatelessWidget {
@@ -76,6 +77,14 @@ class HeatMapColumn extends StatelessWidget {
   // current week.
   final int numDays;
 
+  /// Optional per-cell style resolver.
+  ///
+  /// When provided, it is called for each cell's [DateTime]. If it returns a
+  /// [HeatMapCellStyle] with a non-null [HeatMapCellStyle.color], that color
+  /// takes full priority over [colorsets] / [colorMode] for that specific date.
+  /// Returning `null` falls back to the default threshold-based coloring.
+  final HeatMapCellStyleResolver? cellStyleResolver;
+
   HeatMapColumn({
     super.key,
     required this.startDate,
@@ -93,55 +102,78 @@ class HeatMapColumn extends StatelessWidget {
     this.onClick,
     this.maxValue,
     this.showText,
-  }) : // Init list.
-       dayContainers = List.generate(
-         numDays,
-         (i) => HeatMapContainer(
-           date: DateUtil.changeDay(startDate, i),
-           backgroundColor: defaultColor,
-           size: size,
-           textStyle: dayTextStyle,
-           borderRadius: borderRadius,
-           onClick: onClick,
-           showText: showText,
-           // If datasets has DateTime key which is equal to this HeatMapContainer's date,
-           // we have to color the matched HeatMapContainer.
-           //
-           // If datasets is null or doesn't contains the equal DateTime value, send null.
-            selectedColor:
-                datasets?.keys.contains(
-                      DateUtil.changeDay(startDate, i),
-                    ) ??
-                    false
-                // If colorMode is ColorMode.opacity,
-                ? colorMode == ColorMode.opacity
-                      // Color the container with first value of colorsets
-                      // and set opacity value to current day's datasets key
-                      // devided by maxValue which is the maximum value of the month.
-                      ? colorsets?.values.first.withValues(
-                          alpha:
-                              (datasets?[DateUtil.changeDay(startDate, i)] ??
-                                  1) /
-                              (maxValue ?? 1),
-                        )
-                      // Else if colorMode is ColorMode.Color.
-                      //
-                      // Get color value from colorsets which is filtered with DateTime value
-                      // Using DatasetsUtil.getColor()
-                      : DatasetsUtil.getColor(
-                          colorsets,
-                          datasets?[DateUtil.changeDay(startDate, i)],
-                        )
-                : null,
-         ),
-       ),
-       // Fill emptySpace list only if given wek doesn't have 7 days.
-       emptySpace = (numDays != 7)
-           ? List.generate(
-               7 - numDays,
-               (i) => SizedBox(width: size ?? 42, height: size ?? 42),
-             )
-           : [];
+    this.cellStyleResolver,
+  })  : dayContainers = List.generate(
+          numDays,
+          (i) => _buildDayContainer(
+            date: DateUtil.changeDay(startDate, i),
+            colorMode: colorMode,
+            datasets: datasets,
+            colorsets: colorsets,
+            defaultColor: defaultColor,
+            size: size,
+            dayTextStyle: dayTextStyle,
+            borderRadius: borderRadius,
+            onClick: onClick,
+            showText: showText,
+            maxValue: maxValue,
+            cellStyleResolver: cellStyleResolver,
+          ),
+        ),
+        // Fill emptySpace list only if given week doesn't have 7 days.
+        emptySpace = (numDays != 7)
+            ? List.generate(
+                7 - numDays,
+                (i) => SizedBox(width: size ?? 42, height: size ?? 42),
+              )
+            : [];
+
+  /// Builds a single [HeatMapContainer] for [date], applying [cellStyleResolver]
+  /// with priority over threshold-based [colorsets] coloring.
+  static HeatMapContainer _buildDayContainer({
+    required DateTime date,
+    required ColorMode colorMode,
+    Map<DateTime, int>? datasets,
+    Map<int, Color>? colorsets,
+    Color? defaultColor,
+    double? size,
+    TextStyle? dayTextStyle,
+    double? borderRadius,
+    Function(DateTime)? onClick,
+    bool? showText,
+    int? maxValue,
+    HeatMapCellStyleResolver? cellStyleResolver,
+  }) {
+    // 1. Per-cell resolver takes full priority when it returns a non-null color.
+    final resolvedColor = cellStyleResolver?.call(date)?.color;
+
+    Color? selectedColor;
+    if (resolvedColor != null) {
+      selectedColor = resolvedColor;
+    } else {
+      // 2. Fallback: threshold-based coloring via datasets + colorsets.
+      final dataValue =
+          (datasets?.containsKey(date) ?? false) ? datasets![date] : null;
+      if (dataValue != null) {
+        selectedColor = colorMode == ColorMode.opacity
+            ? colorsets?.values.first.withValues(
+                alpha: dataValue / (maxValue ?? 1),
+              )
+            : DatasetsUtil.getColor(colorsets, dataValue);
+      }
+    }
+
+    return HeatMapContainer(
+      date: date,
+      backgroundColor: defaultColor,
+      size: size,
+      textStyle: dayTextStyle,
+      borderRadius: borderRadius,
+      onClick: onClick,
+      showText: showText,
+      selectedColor: selectedColor,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,3 +1,11 @@
+## 2.2.0
+
+- Added `cellStyleResolver` (`HeatMapCellStyleResolver`) parameter to `HeatMapCalendar` and `HeatMap`.
+- Added `HeatMapCellStyle` class (exported from barrel) with `color` and `textColor` (reserved) fields.
+- When `cellStyleResolver` returns a `HeatMapCellStyle` with a non-null `color`, that color takes full priority over the global `colorsets` / `ColorMode` logic for that specific date. Returning `null` falls back to the default threshold-based behavior — fully non-breaking.
+- Works for all calendar types: `month`, `week`, `biweek`, and `year`.
+- Added `example/lib/pages/heatmap_cell_style_resolver_example.dart` demonstrating a green/red income-vs-expense use case.
+
 ## 2.1.0
 
 - Fixed color alignment bug in `HeatMapColumn` for non-default `weekStartsWith` values.
