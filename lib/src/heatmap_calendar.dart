@@ -117,10 +117,15 @@ class HeatMapCalendar extends StatefulWidget {
   /// - [HeatmapCalendarType.year]: delegates to [HeatMap] (full-year heatmap).
   final HeatmapCalendarType type;
 
-  /// The end date for the year heatmap view ([HeatmapCalendarType.year]).
+  /// The end date of the visible range.
   ///
-  /// Only used when [type] is [HeatmapCalendarType.year].
-  /// Defaults to [DateTime.now] inside [HeatMap].
+  /// - [HeatmapCalendarType.year]: end of the year heatmap (defaults to
+  ///   [DateTime.now] inside [HeatMap]).
+  /// - [HeatmapCalendarType.month]: when non-null, the month renders the exact
+  ///   `startDate..endDate` range week-by-week — useful for a financial period
+  ///   that does not start on day 1 (e.g. `15 Jun → 14 Jul`). When null, the
+  ///   calendar month is rendered (unchanged behavior).
+  /// - Ignored for [HeatmapCalendarType.week] / [HeatmapCalendarType.biweek].
   final DateTime? endDate;
 
   /// Reverse scroll direction when [scrollable] is true.
@@ -205,33 +210,83 @@ class HeatMapCalendar extends StatefulWidget {
 class _HeatMapCalendarState extends State<HeatMapCalendar> {
   // The DateTime value of the current reference date.
   // For month view: first day of the current month.
+  // For the dynamic-range month: the raw period start (e.g. day 15).
   // For week/biweek view: the actual reference date (any day of the week).
   DateTime? _currentDate;
+
+  // The end of the current period — only set for the dynamic-range month
+  // ([type] == month with a non-null [endDate]).
+  DateTime? _currentEndDate;
+
+  /// True when the month view should render an explicit date range instead of
+  /// a calendar month.
+  bool get _isRangeMode =>
+      widget.type == HeatmapCalendarType.month && widget.endDate != null;
+
+  static DateTime _dateOnly(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
+
+  /// Resolves the reference date for [base] according to the current type.
+  ///
+  /// - month (calendar) / year → first day of the month.
+  /// - month (range) → the raw start, date-only.
+  /// - week / biweek → the raw date, so the week start is computed correctly.
+  DateTime _resolveCurrentDate(DateTime base) {
+    if (_isRangeMode) return _dateOnly(base);
+    return (widget.type == HeatmapCalendarType.month ||
+            widget.type == HeatmapCalendarType.year)
+        ? DateUtil.startDayOfMonth(base)
+        : base;
+  }
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      // Link controller with this state.
+    // Link controller with this state.
+    widget.controller?._state = this;
+    final base = widget.startDate ?? DateTime.now();
+    _currentDate = _resolveCurrentDate(base);
+    _currentEndDate = _isRangeMode ? _dateOnly(widget.endDate!) : null;
+  }
+
+  @override
+  void didUpdateWidget(covariant HeatMapCalendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Keep the controller wired to the live state if it was swapped.
+    if (oldWidget.controller != widget.controller) {
+      if (oldWidget.controller?._state == this) {
+        oldWidget.controller?._state = null;
+      }
       widget.controller?._state = this;
-      // For month/year view: anchor to the first day of the month.
-      // For week/biweek view: keep the raw date so startDayOfWeek is computed correctly.
+    }
+
+    // Re-sync the internal reference dates only when the inputs that define
+    // them change. Plain dataset/style rebuilds must NOT reset navigation
+    // performed via the arrows or the controller.
+    final bool inputsChanged =
+        oldWidget.startDate != widget.startDate ||
+        oldWidget.endDate != widget.endDate ||
+        oldWidget.type != widget.type;
+    if (inputsChanged) {
       final base = widget.startDate ?? DateTime.now();
-      _currentDate =
-          (widget.type == HeatmapCalendarType.month ||
-              widget.type == HeatmapCalendarType.year)
-          ? DateUtil.startDayOfMonth(base)
-          : base;
-    });
+      setState(() {
+        _currentDate = _resolveCurrentDate(base);
+        _currentEndDate = _isRangeMode ? _dateOnly(widget.endDate!) : null;
+      });
+    }
   }
 
   void goToDate(DateTime date) {
     setState(() {
-      _currentDate =
-          (widget.type == HeatmapCalendarType.month ||
-              widget.type == HeatmapCalendarType.year)
-          ? DateUtil.startDayOfMonth(date)
-          : date;
+      if (_isRangeMode) {
+        // Preserve the current period length, anchored at the new start.
+        final length = _currentEndDate!.difference(_currentDate!).inDays;
+        _currentDate = _dateOnly(date);
+        _currentEndDate = DateUtil.changeDay(_currentDate!, length);
+      } else {
+        _currentDate = _resolveCurrentDate(date);
+      }
     });
     widget.onMonthChange?.call(_currentDate!);
   }
@@ -239,11 +294,19 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
   void changePeriod(int direction) {
     setState(() {
       final base = _currentDate ?? DateTime.now();
-      _currentDate = switch (widget.type) {
-        HeatmapCalendarType.week => DateUtil.changeDay(base, direction * 7),
-        HeatmapCalendarType.biweek => DateUtil.changeDay(base, direction * 14),
-        _ => DateUtil.changeMonth(base, direction),
-      };
+      if (_isRangeMode) {
+        // A dynamic period is anchored to a day-of-month (e.g. the 15th), so
+        // navigation shifts by whole months to keep that anchor. Shifting by a
+        // fixed day count would drift across months of different lengths.
+        _currentDate = DateUtil.changeMonth(base, direction);
+        _currentEndDate = DateUtil.changeMonth(_currentEndDate!, direction);
+      } else {
+        _currentDate = switch (widget.type) {
+          HeatmapCalendarType.week => DateUtil.changeDay(base, direction * 7),
+          HeatmapCalendarType.biweek => DateUtil.changeDay(base, direction * 14),
+          _ => DateUtil.changeMonth(base, direction),
+        };
+      }
     });
     widget.onMonthChange?.call(_currentDate!);
   }
@@ -253,11 +316,12 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
   /// For week/biweek views, falls back to [kDefaultDatePatternWeek] when the
   /// user did not override [datePattern] (i.e. it is still the month default).
   String get _effectiveDatePattern {
-    final isWeekType =
+    final isRangeHeader =
         widget.type == HeatmapCalendarType.week ||
-        widget.type == HeatmapCalendarType.biweek;
+        widget.type == HeatmapCalendarType.biweek ||
+        _isRangeMode;
     final isDefaultPattern = widget.datePattern == kDefaultDatePatternCalendar;
-    return (isWeekType && isDefaultPattern)
+    return (isRangeHeader && isDefaultPattern)
         ? kDefaultDatePatternWeek
         : widget.datePattern;
   }
@@ -276,8 +340,9 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
     };
   }
 
-  /// Computes the header end date for week/biweek range display.
+  /// Computes the header end date for week/biweek/range display.
   DateTime? get _headerEndDate {
+    if (_isRangeMode) return _currentEndDate;
     final start = _headerStartDate;
     if (start == null) return null;
     return switch (widget.type) {
@@ -362,6 +427,7 @@ class _HeatMapCalendarState extends State<HeatMapCalendar> {
           HeatMapCalendarPage(
             weekStartsWith: widget.weekStartsWith,
             baseDate: _currentDate ?? DateTime.now(),
+            endDate: _currentEndDate,
             colorMode: widget.colorMode,
             flexible: widget.flexible,
             size: widget.size,

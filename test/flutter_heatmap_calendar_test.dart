@@ -8,9 +8,6 @@ import 'package:heatmap_calendar_plus/src/widget/heatmap_color_tip.dart';
 import 'package:heatmap_calendar_plus/src/widget/heatmap_container.dart';
 
 void main() {
-  // ─────────────────────────────────────────────
-  // Task 1: DateUtil.changeDay unit tests
-  // ─────────────────────────────────────────────
   group('DateUtil.changeDay', () {
     test('same-month shift: adds days within the same month', () {
       final base = DateTime(2024, 5, 10);
@@ -25,21 +22,18 @@ void main() {
     });
 
     test('leap-year rollover: Feb 28 + 1 day = Feb 29 on leap year', () {
-      final base = DateTime(2024, 2, 28); // 2024 is a leap year
+      final base = DateTime(2024, 2, 28);
       final result = DateUtil.changeDay(base, 1);
       expect(result, DateTime(2024, 2, 29));
     });
 
     test('non-leap-year rollover: Feb 28 + 1 day = Mar 1', () {
-      final base = DateTime(2023, 2, 28); // 2023 is NOT a leap year
+      final base = DateTime(2023, 2, 28);
       final result = DateUtil.changeDay(base, 1);
       expect(result, DateTime(2023, 3, 1));
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 2: HeatMap with weekStartsWith=1 color alignment
-  // ─────────────────────────────────────────────
   group('HeatMap color alignment with weekStartsWith=1', () {
     setUpAll(() async {
       await initializeDateFormatting();
@@ -48,7 +42,6 @@ void main() {
     testWidgets('Monday cell uses Monday dataset color, not a shifted date', (
       WidgetTester tester,
     ) async {
-      // Monday 2024-05-06 has value 10
       final monday = DateTime(2024, 5, 6);
       final datasets = {monday: 10};
       final colorsets = {1: Colors.green};
@@ -73,10 +66,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // The heatmap should render without exceptions
       expect(tester.takeException(), isNull);
 
-      // There should be at least 1 green-colored AnimatedContainer (Monday's dataset)
       final greenContainers = find.byWidgetPredicate(
         (widget) =>
             widget is AnimatedContainer &&
@@ -89,7 +80,6 @@ void main() {
     testWidgets('number of colored blocks matches non-zero dataset entries', (
       WidgetTester tester,
     ) async {
-      // Two separate days in the same week
       final monday = DateTime(2024, 5, 6);
       final wednesday = DateTime(2024, 5, 8);
       final datasets = {monday: 5, wednesday: 10};
@@ -116,9 +106,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      // Verify the heatmap rendered correctly — both colored days are in the dataset
-      // and the widget rendered without errors means alignment is correct.
-      // Verify via AnimatedContainer with a BoxDecoration containing a color.
       final coloredBlocks = find.byWidgetPredicate(
         (widget) =>
             widget is AnimatedContainer &&
@@ -126,14 +113,11 @@ void main() {
             (widget.decoration as BoxDecoration).color != null &&
             (widget.decoration as BoxDecoration).color != Colors.transparent,
       );
-      // 2 datasets entries means 2 colored blocks
+
       expect(coloredBlocks, findsAtLeastNWidgets(2));
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 3: HeatMapCalendarPage without spacing
-  // ─────────────────────────────────────────────
   group('HeatMapCalendarPage spacing default', () {
     setUpAll(() async {
       await initializeDateFormatting();
@@ -158,14 +142,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      // The calendar widget should be present in the tree
       expect(find.byType(HeatMapCalendar), findsOneWidget);
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 4: HeatMapColorTip without spacing
-  // ─────────────────────────────────────────────
   group('HeatMapColorTip spacing default', () {
     testWidgets('builds without null exception when spacing is omitted', (
       WidgetTester tester,
@@ -184,34 +164,29 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      // No labels rendered by default (defaultLeftLabel/defaultRightLabel are null)
       expect(find.text('less'), findsNothing);
       expect(find.text('more'), findsNothing);
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 1 (TDD RED): DateUtil.startDayOfWeek / endDayOfWeek
-  // ─────────────────────────────────────────────
   group('DateUtil.startDayOfWeek', () {
     test('Sunday start (weekStartsWith=7): Wednesday → previous Sunday', () {
-      // Wednesday 2024-05-08, weekStartsWith=7 (Sunday)
-      final wednesday = DateTime(2024, 5, 8); // weekday=3
+      final wednesday = DateTime(2024, 5, 8);
       final result = DateUtil.startDayOfWeek(wednesday, 7);
-      expect(result, DateTime(2024, 5, 5)); // Sunday
+      expect(result, DateTime(2024, 5, 5));
     });
 
     test(
       'Monday start (weekStartsWith=1): Wednesday → Monday of same week',
       () {
-        final wednesday = DateTime(2024, 5, 8); // weekday=3
+        final wednesday = DateTime(2024, 5, 8);
         final result = DateUtil.startDayOfWeek(wednesday, 1);
-        expect(result, DateTime(2024, 5, 6)); // Monday
+        expect(result, DateTime(2024, 5, 6));
       },
     );
 
     test('startDayOfWeek: date that IS the start day returns itself', () {
-      final monday = DateTime(2024, 5, 6); // weekday=1
+      final monday = DateTime(2024, 5, 6);
       final result = DateUtil.startDayOfWeek(monday, 1);
       expect(result, monday);
     });
@@ -220,21 +195,18 @@ void main() {
   group('DateUtil.endDayOfWeek', () {
     test('endDayOfWeek = startDayOfWeek + 6', () {
       final wednesday = DateTime(2024, 5, 8);
-      final start = DateUtil.startDayOfWeek(wednesday, 1); // Monday 2024-05-06
+      final start = DateUtil.startDayOfWeek(wednesday, 1);
       final end = DateUtil.endDayOfWeek(wednesday, 1);
-      expect(end, DateUtil.changeDay(start, 6)); // Sunday 2024-05-12
+      expect(end, DateUtil.changeDay(start, 6));
     });
 
     test('endDayOfWeek Sunday-start: end is Saturday', () {
       final wednesday = DateTime(2024, 5, 8);
       final end = DateUtil.endDayOfWeek(wednesday, 7);
-      expect(end, DateTime(2024, 5, 11)); // Saturday
+      expect(end, DateTime(2024, 5, 11));
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 3 (TDD RED): DatasetsUtil.filterDateRange
-  // ─────────────────────────────────────────────
   group('DatasetsUtil.filterDateRange', () {
     test('null input returns empty map', () {
       final result = DatasetsUtil.filterDateRange(
@@ -249,9 +221,9 @@ void main() {
       final start = DateTime(2024, 5, 1);
       final end = DateTime(2024, 5, 7);
       final datasets = {
-        DateTime(2024, 5, 1): 1, // boundary start — keep
-        DateTime(2024, 5, 4): 5, // middle — keep
-        DateTime(2024, 5, 7): 10, // boundary end — keep
+        DateTime(2024, 5, 1): 1,
+        DateTime(2024, 5, 4): 5,
+        DateTime(2024, 5, 7): 10,
       };
       final result = DatasetsUtil.filterDateRange(datasets, start, end);
       expect(result.length, 3);
@@ -263,9 +235,9 @@ void main() {
       final start = DateTime(2024, 5, 1);
       final end = DateTime(2024, 5, 7);
       final datasets = {
-        DateTime(2024, 4, 30): 99, // before start — remove
-        DateTime(2024, 5, 3): 3, // in range — keep
-        DateTime(2024, 5, 8): 88, // after end — remove
+        DateTime(2024, 4, 30): 99,
+        DateTime(2024, 5, 3): 3,
+        DateTime(2024, 5, 8): 88,
       };
       final result = DatasetsUtil.filterDateRange(datasets, start, end);
       expect(result.length, 1);
@@ -273,9 +245,6 @@ void main() {
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 5 (TDD): HeatMapCalendar type=week renders 7 HeatMapContainers
-  // ─────────────────────────────────────────────
   group('HeatMapCalendar type=week', () {
     setUpAll(() async {
       await initializeDateFormatting();
@@ -302,9 +271,6 @@ void main() {
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 8 (TDD): HeatMapCalendar type=biweek renders 14 HeatMapContainers
-  // ─────────────────────────────────────────────
   group('HeatMapCalendar type=biweek', () {
     setUpAll(() async {
       await initializeDateFormatting();
@@ -331,9 +297,6 @@ void main() {
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 10 (TDD): HeatMapCalendar dispatches correct widget types by type
-  // ─────────────────────────────────────────────
   group('HeatMapCalendar type dispatch', () {
     setUpAll(() async {
       await initializeDateFormatting();
@@ -377,7 +340,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      // Layout overflow is acceptable for year view in constrained test env
+
       final exception = tester.takeException();
       expect(
         exception == null || exception.toString().contains('overflowed'),
@@ -387,9 +350,6 @@ void main() {
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 12 (TDD RED): HeatMapCalendar showText=false hides day numbers
-  // ─────────────────────────────────────────────
   group('HeatMapCalendar showText', () {
     setUpAll(() async {
       await initializeDateFormatting();
@@ -414,8 +374,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      // When showText=false, no day-number text widgets should be visible
-      // Day 1 shouldn't be visible as a text node
+
       expect(find.text('1'), findsNothing);
     });
 
@@ -441,9 +400,6 @@ void main() {
     });
   });
 
-  // ─────────────────────────────────────────────
-  // HeatMapCalendar week/biweek header navigation
-  // ─────────────────────────────────────────────
   group('HeatMapCalendar week/biweek header', () {
     setUpAll(() async {
       await initializeDateFormatting();
@@ -452,7 +408,6 @@ void main() {
     testWidgets('type=week shows date range in header', (
       WidgetTester tester,
     ) async {
-      // Monday 2024-05-06, weekStartsWith=1 → range "May 6 – May 12"
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -490,14 +445,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.arrow_forward_ios));
       await tester.pumpAndSettle();
-      // Next week: May 13 – May 19
+
       expect(find.text('May 13 – May 19'), findsOneWidget);
     });
 
     testWidgets('type=biweek shows two-week range in header', (
       WidgetTester tester,
     ) async {
-      // Monday 2024-05-06, weekStartsWith=1 → range "May 6 – May 19"
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -535,14 +489,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.arrow_forward_ios));
       await tester.pumpAndSettle();
-      // +14 days: May 20 – Jun 2
+
       expect(find.text('May 20 – Jun 2'), findsOneWidget);
     });
   });
 
-  // ─────────────────────────────────────────────
-  // Task 14 (TDD RED): HeatMapColorTip null labels render no label text
-  // ─────────────────────────────────────────────
   group('HeatMapColorTip defaultLeftLabel/defaultRightLabel', () {
     testWidgets(
       'null defaultLeftLabel and defaultRightLabel with no helper widgets renders no label text',
@@ -587,5 +538,275 @@ void main() {
         expect(find.text('más'), findsOneWidget);
       },
     );
+  });
+
+  group('DateUtil.separatedRange', () {
+    test('financial period 15 Jun → 14 Jul (weekStartsWith=1)', () {
+      final rows = DateUtil.separatedRange(
+        DateTime(2026, 6, 15),
+        DateTime(2026, 7, 14),
+        1,
+      );
+      expect(rows, [
+        {DateTime(2026, 6, 15): DateTime(2026, 6, 21)},
+        {DateTime(2026, 6, 22): DateTime(2026, 6, 28)},
+        {DateTime(2026, 6, 29): DateTime(2026, 7, 5)},
+        {DateTime(2026, 7, 6): DateTime(2026, 7, 12)},
+        {DateTime(2026, 7, 13): DateTime(2026, 7, 14)},
+      ]);
+    });
+
+    test('first/last rows align to weekStartsWith — 20 May → 19 Jun', () {
+      final rows = DateUtil.separatedRange(
+        DateTime(2026, 5, 20),
+        DateTime(2026, 6, 19),
+        1,
+      );
+      expect(rows, [
+        {DateTime(2026, 5, 20): DateTime(2026, 5, 24)},
+        {DateTime(2026, 5, 25): DateTime(2026, 5, 31)},
+        {DateTime(2026, 6, 1): DateTime(2026, 6, 7)},
+        {DateTime(2026, 6, 8): DateTime(2026, 6, 14)},
+        {DateTime(2026, 6, 15): DateTime(2026, 6, 19)},
+      ]);
+    });
+
+    test('parity: full calendar month equals separatedMonth', () {
+      final range = DateUtil.separatedRange(
+        DateTime(2026, 6, 1),
+        DateTime(2026, 6, 30),
+        1,
+      );
+      expect(range, DateUtil.separatedMonth(DateTime(2026, 6, 1), 1));
+    });
+
+    test('parity: month not starting on weekStart (Sep 2026)', () {
+      final range = DateUtil.separatedRange(
+        DateTime(2026, 9, 1),
+        DateTime(2026, 9, 30),
+        1,
+      );
+      expect(range, DateUtil.separatedMonth(DateTime(2026, 9, 1), 1));
+    });
+
+    test('single-day range yields one single-day row', () {
+      final rows = DateUtil.separatedRange(
+        DateTime(2026, 6, 15),
+        DateTime(2026, 6, 15),
+        1,
+      );
+      expect(rows, [
+        {DateTime(2026, 6, 15): DateTime(2026, 6, 15)},
+      ]);
+    });
+
+    test('leap February ends exactly on Feb 29', () {
+      final rows = DateUtil.separatedRange(
+        DateTime(2024, 2, 1),
+        DateTime(2024, 2, 29),
+        1,
+      );
+      expect(rows.last.values.first, DateTime(2024, 2, 29));
+    });
+
+    test('time components on the bounds are ignored', () {
+      final rows = DateUtil.separatedRange(
+        DateTime(2026, 6, 15, 8, 30),
+        DateTime(2026, 7, 14, 23, 59, 59),
+        1,
+      );
+      expect(rows.first.keys.first, DateTime(2026, 6, 15));
+      expect(rows.last.values.first, DateTime(2026, 7, 14));
+    });
+  });
+
+  group('HeatMapCalendar month + endDate (range mode)', () {
+    setUpAll(() async {
+      await initializeDateFormatting();
+    });
+
+    Widget rangeCalendar({Function(DateTime)? onClick}) => MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: HeatMapCalendar(
+            type: HeatmapCalendarType.month,
+            startDate: DateTime(2026, 6, 15),
+            endDate: DateTime(2026, 7, 14),
+            weekStartsWith: 1,
+            colorsets: const {1: Colors.green},
+            colorMode: ColorMode.color,
+            onClick: onClick,
+          ),
+        ),
+      ),
+    );
+
+    testWidgets('renders exactly one container per day in the range', (
+      tester,
+    ) async {
+      await tester.pumpWidget(rangeCalendar());
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      expect(find.byType(HeatMapContainer), findsNWidgets(30));
+    });
+
+    testWidgets('shows period bounds and the cross-month day once', (
+      tester,
+    ) async {
+      await tester.pumpWidget(rangeCalendar());
+      await tester.pumpAndSettle();
+      expect(find.text('15'), findsOneWidget);
+      expect(find.text('14'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+    });
+
+    testWidgets('header shows the period range', (tester) async {
+      await tester.pumpWidget(rangeCalendar());
+      await tester.pumpAndSettle();
+      expect(find.text('Jun 15 – Jul 14'), findsOneWidget);
+    });
+
+    testWidgets('next arrow shifts by a whole month, keeping day anchors', (
+      tester,
+    ) async {
+      await tester.pumpWidget(rangeCalendar());
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_forward_ios));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Jul 15 – Aug 14'), findsOneWidget);
+    });
+
+    testWidgets(
+      'back navigation keeps the 15th anchor across months of differing length',
+      (tester) async {
+        await tester.pumpWidget(rangeCalendar());
+        await tester.pumpAndSettle();
+
+        const expected = [
+          'May 15 – Jun 14',
+          'Apr 15 – May 14',
+          'Mar 15 – Apr 14',
+          'Feb 15 – Mar 14',
+          'Jan 15 – Feb 14',
+        ];
+        for (final label in expected) {
+          await tester.tap(find.byIcon(Icons.arrow_back_ios));
+          await tester.pumpAndSettle();
+          expect(find.text(label), findsOneWidget);
+        }
+      },
+    );
+
+    testWidgets('tapping a cell reports the correct date', (tester) async {
+      DateTime? clicked;
+      await tester.pumpWidget(rangeCalendar(onClick: (d) => clicked = d));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('1'));
+      await tester.pumpAndSettle();
+      expect(clicked, DateTime(2026, 7, 1));
+    });
+  });
+
+  group('HeatMapCalendar month without endDate', () {
+    setUpAll(() async {
+      await initializeDateFormatting();
+    });
+
+    testWidgets('renders one container per day of the calendar month', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: HeatMapCalendar(
+                type: HeatmapCalendarType.month,
+                startDate: DateTime(2026, 6, 1),
+                weekStartsWith: 1,
+                colorsets: const {1: Colors.green},
+                colorMode: ColorMode.color,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      expect(find.byType(HeatMapContainer), findsNWidgets(30));
+    });
+  });
+
+  group('HeatMapCalendar didUpdateWidget resync', () {
+    setUpAll(() async {
+      await initializeDateFormatting();
+    });
+
+    Widget build(HeatmapCalendarType type, DateTime startDate) => MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: HeatMapCalendar(
+            type: type,
+            startDate: startDate,
+            weekStartsWith: 1,
+            colorsets: const {1: Colors.green},
+            colorMode: ColorMode.color,
+          ),
+        ),
+      ),
+    );
+
+    testWidgets('changing startDate/type updates the rendered days', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        build(HeatmapCalendarType.month, DateTime(2026, 6, 1)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(
+        build(HeatmapCalendarType.week, DateTime(2026, 6, 8)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+
+      for (final day in [8, 9, 10, 11, 12, 13, 14]) {
+        expect(find.text('$day'), findsOneWidget);
+      }
+      expect(find.text('1'), findsNothing);
+    });
+  });
+
+  group('HeatMapCalendar opacity maxValue across month boundary', () {
+    setUpAll(() async {
+      await initializeDateFormatting();
+    });
+
+    testWidgets('week crossing a month with data only in the other month', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: HeatMapCalendar(
+                type: HeatmapCalendarType.week,
+                startDate: DateTime(2026, 7, 1),
+                weekStartsWith: 1,
+                colorMode: ColorMode.opacity,
+                colorsets: const {1: Colors.green},
+                datasets: {DateTime(2026, 6, 30): 10},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+    });
   });
 }

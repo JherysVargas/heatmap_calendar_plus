@@ -14,6 +14,8 @@ class HeatMapCalendarExample extends StatefulWidget {
 class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
   HeatmapCalendarType calendarType = HeatmapCalendarType.week;
 
+  bool customPeriod = false;
+
   final TextEditingController dateController = TextEditingController();
   final TextEditingController heatLevelController = TextEditingController();
 
@@ -56,6 +58,13 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
     );
   }
 
+  void _selectType(HeatmapCalendarType type) {
+    setState(() {
+      calendarType = type;
+      customPeriod = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,22 +81,26 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          calendarType = HeatmapCalendarType.week;
-                        });
-                      },
+                      onPressed: () => _selectType(HeatmapCalendarType.week),
                       child: _textButton('Week'),
                     ),
                   ),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          calendarType = HeatmapCalendarType.biweek;
-                        });
-                      },
+                      onPressed: () => _selectType(HeatmapCalendarType.biweek),
                       child: _textButton('Biweek'),
+                    ),
+                  ),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _selectType(HeatmapCalendarType.month),
+                      child: _textButton('Month'),
+                    ),
+                  ),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _selectType(HeatmapCalendarType.year),
+                      child: _textButton('Year'),
                     ),
                   ),
                   Expanded(
@@ -95,19 +108,10 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
                       onPressed: () {
                         setState(() {
                           calendarType = HeatmapCalendarType.month;
+                          customPeriod = true;
                         });
                       },
-                      child: _textButton('Month'),
-                    ),
-                  ),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          calendarType = HeatmapCalendarType.year;
-                        });
-                      },
-                      child: _textButton('Year'),
+                      child: _textButton('Period'),
                     ),
                   ),
                 ],
@@ -124,6 +128,16 @@ class _HeatMapCalendarExample extends State<HeatMapCalendarExample> {
                 child: HeatMapCalendar(
                   flexible: true,
                   type: calendarType,
+                  startDate: customPeriod
+                      ? DateTime(DateTime.now().year, DateTime.now().month, 15)
+                      : null,
+                  endDate: customPeriod
+                      ? DateTime(
+                          DateTime.now().year,
+                          DateTime.now().month + 1,
+                          14,
+                        )
+                      : null,
                   controller: calendarController,
                   datasets: heatMapDatasets,
                   reversed: false,

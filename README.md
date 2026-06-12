@@ -156,8 +156,41 @@ import 'package:heatmap_calendar_plus/heatmap_calendar_plus.dart';
 |marginHeader|`EdgeInsets?`|`null`|The EdgeInsets value of margin for header.|
 |headerBuilder|`HeaderBuilder?`|`null`|Custom header builder function.|
 |controller|`HeatMapCalendarController?`|`null`|Controller for manipulating the state of `HeatMapCalendar`.|
+|type|`HeatmapCalendarType`|`HeatmapCalendarType.month`|View type: `week`, `biweek`, `month`, or `year`.|
+|startDate|`DateTime?`|Today<br>( `DateTime.now()` )|Reference date. For `month` it anchors the month; for `week`/`biweek` any day of the period; for the dynamic-range month it is the period start.|
+|endDate|`DateTime?`|`null`|End of the visible range. With `type: month`, a non-null value renders the exact `startDate..endDate` range week-by-week (e.g. a financial period `15 Jun → 14 Jul`) instead of the calendar month. Also used as the last day of the `year` view. Ignored for `week`/`biweek`.|
+|weekStartsWith|`int`|`7`|First day of the week. `1` = Monday … `7` = Sunday.|
 
 ## Example
+
+### HeatMapCalendar — custom financial period (`month` + `endDate`)
+
+Render a period that does not start on day 1 (for example `15 Jun → 14 Jul`) as a
+clean week-by-week grid with day numbers — no need to fall back to the year view:
+
+```dart
+import 'package:heatmap_calendar_plus/heatmap_calendar_plus.dart';
+...
+HeatMapCalendar(
+  type: HeatmapCalendarType.month,
+  startDate: DateTime(2026, 6, 15), // period start
+  endDate: DateTime(2026, 7, 14),   // period end (inclusive)
+  weekStartsWith: 1,                // Monday
+  colorMode: ColorMode.color,
+  flexible: true,
+  colorsets: const {
+    1: Colors.red,
+    3: Colors.orange,
+    5: Colors.yellow,
+    7: Colors.green,
+  },
+  datasets: {
+    DateTime(2026, 6, 20): 5,
+    DateTime(2026, 7, 1): 9,
+  },
+  onClick: (date) => debugPrint('Tapped $date'),
+);
+```
 
 ### HeatMap
 

@@ -43,6 +43,32 @@ class DateUtil {
     return savedMonth;
   }
 
+  /// Separate an arbitrary date range into a list of week rows.
+  ///
+  /// Every entry maps a row's start date to its end date. Rows are aligned
+  /// to [weekStartsWith]: the first row is shorter when [startDate] is not
+  /// the first day of the week, and the last row is shorter when [endDate]
+  /// is not the last one. Rows can cross month boundaries.
+  /// Time components of both dates are ignored.
+  static List<Map<DateTime, DateTime>> separatedRange(
+    final DateTime startDate,
+    final DateTime endDate,
+    final int weekStartsWith,
+  ) {
+    DateTime rowStart = DateTime(startDate.year, startDate.month, startDate.day);
+    final DateTime finalDate =
+        DateTime(endDate.year, endDate.month, endDate.day);
+    final List<Map<DateTime, DateTime>> savedRange = [];
+
+    while (!rowStart.isAfter(finalDate)) {
+      final DateTime weekEnd = endDayOfWeek(rowStart, weekStartsWith);
+      final DateTime rowEnd = weekEnd.isAfter(finalDate) ? finalDate : weekEnd;
+      savedRange.add({rowStart: rowEnd});
+      rowStart = changeDay(rowEnd, 1);
+    }
+    return savedRange;
+  }
+
   /// Change day of [referenceDate].
   static DateTime changeDay(final DateTime referenceDate, final int dayCount) =>
       DateTime(

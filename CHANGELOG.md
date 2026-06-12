@@ -1,3 +1,11 @@
+## 2.3.0
+
+- Added dynamic-range month view: passing a non-null `endDate` with `type: HeatmapCalendarType.month` renders the exact `startDate..endDate` range week-by-week (e.g. a financial period running `15 Jun → 14 Jul`), instead of falling back to the year heatmap. Fully non-breaking — `endDate` was previously only honored for the year view, so existing month usage is unchanged.
+- Fixed `HeatMapCalendar` not reacting to prop changes: it now implements `didUpdateWidget`, so updating `startDate`, `endDate`, or `type` from the parent re-syncs the grid. Previously the reference date was only read once in `initState`, leaving the calendar showing stale dates after a rebuild.
+- Fixed opacity normalization for `week` / `biweek` views that cross a month boundary: `maxValue` is now computed from the visible range instead of the base date's calendar month. This removes a potential non-finite alpha (division by zero) crash in `ColorMode.opacity`, plus an extra guard when `maxValue <= 0`.
+- Range header (`start – end`) is now also shown for the dynamic-range month, and internal arrow navigation shifts by whole months to keep the period's day-of-month anchors (e.g. `15 → 14`) stable across months of differing length.
+- Internal cleanup: generalized the row empty-cell logic to pure week-alignment (supports rows that cross months) and de-duplicated `HeatMapCalendarPage._buildMonthView` to reuse the shared row builder.
+
 ## 2.2.0
 
 - Added `cellStyleResolver` (`HeatMapCellStyleResolver`) parameter to `HeatMapCalendar` and `HeatMap`.

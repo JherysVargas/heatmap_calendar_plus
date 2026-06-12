@@ -11,6 +11,13 @@ class HeatMapCalendarPage extends StatelessWidget {
   /// The DateTime value which contains the current calendar's date value.
   final DateTime baseDate;
 
+  /// End date of the visible range for [HeatmapCalendarType.month].
+  ///
+  /// When non-null, the month view renders the exact `baseDate..endDate`
+  /// range week-by-week (a financial period that does not start on day 1),
+  /// instead of the calendar month. Ignored for other types.
+  final DateTime? endDate;
+
   /// Which day the week should start?
   /// weekStartsWith = 1 for Monday, ..., weekStartsWith = 7 for Sunday.
   /// Default to 7 (the week starts wih Sunday).
@@ -86,6 +93,7 @@ class HeatMapCalendarPage extends StatelessWidget {
     required this.baseDate,
     required this.colorMode,
     required this.weekStartsWith,
+    this.endDate,
     this.flexible,
     this.size,
     this.dayTextStyle,
@@ -98,10 +106,69 @@ class HeatMapCalendarPage extends StatelessWidget {
     this.type = HeatmapCalendarType.month,
     this.showText,
     this.cellStyleResolver,
-  }) : separatedDate = DateUtil.separatedMonth(baseDate, weekStartsWith),
+  }) : separatedDate = _resolveSeparatedDate(
+         baseDate,
+         endDate,
+         type,
+         weekStartsWith,
+       ),
        maxValue = DatasetsUtil.getMaxValue(
-         DatasetsUtil.filterMonth(datasets, baseDate),
+         _visibleDatasets(datasets, baseDate, endDate, type, weekStartsWith),
        );
+
+  /// Week rows to render for the month view.
+  ///
+  /// Uses [DateUtil.separatedRange] for the dynamic-range month
+  /// ([type] == month with a non-null [endDate]); otherwise the calendar
+  /// month via [DateUtil.separatedMonth] (unchanged behavior).
+  static List<Map<DateTime, DateTime>> _resolveSeparatedDate(
+    DateTime baseDate,
+    DateTime? endDate,
+    HeatmapCalendarType type,
+    int weekStartsWith,
+  ) {
+    if (type == HeatmapCalendarType.month && endDate != null) {
+      return DateUtil.separatedRange(baseDate, endDate, weekStartsWith);
+    }
+    return DateUtil.separatedMonth(baseDate, weekStartsWith);
+  }
+
+  /// The datasets that are actually visible, used to derive [maxValue] for
+  /// opacity normalization. Scoped to the visible range per [type] so a week
+  /// that crosses a month boundary no longer normalizes against the wrong
+  /// month (which could yield `maxValue == 0` and a non-finite alpha).
+  static Map<DateTime, int> _visibleDatasets(
+    Map<DateTime, int>? datasets,
+    DateTime baseDate,
+    DateTime? endDate,
+    HeatmapCalendarType type,
+    int weekStartsWith,
+  ) {
+    switch (type) {
+      case HeatmapCalendarType.week:
+        return DatasetsUtil.filterDateRange(
+          datasets,
+          DateUtil.startDayOfWeek(baseDate, weekStartsWith),
+          DateUtil.endDayOfWeek(baseDate, weekStartsWith),
+        );
+      case HeatmapCalendarType.biweek:
+        return DatasetsUtil.filterDateRange(
+          datasets,
+          DateUtil.startDayOfWeek(baseDate, weekStartsWith),
+          DateUtil.changeDay(
+            DateUtil.endDayOfWeek(baseDate, weekStartsWith),
+            7,
+          ),
+        );
+      case HeatmapCalendarType.month:
+        if (endDate != null) {
+          return DatasetsUtil.filterDateRange(datasets, baseDate, endDate);
+        }
+        return DatasetsUtil.filterMonth(datasets, baseDate);
+      case HeatmapCalendarType.year:
+        return DatasetsUtil.filterMonth(datasets, baseDate);
+    }
+  }
 
   // ─── helpers ─────────────────────────────────────────────────────────────
 
@@ -165,32 +232,8 @@ class HeatMapCalendarPage extends StatelessWidget {
         spacing: spacing,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          for (var date in separatedDate)
-            HeatMapCalendarRow(
-              startDate: date.keys.first,
-              endDate: date.values.first,
-              colorMode: colorMode,
-              size: size,
-              weekStartsWith: weekStartsWith,
-              dayTextStyle: dayTextStyle,
-              defaultColor: defaultColor,
-              colorsets: colorsets,
-              borderRadius: borderRadius,
-              flexible: flexible,
-              spacing: spacing,
-              maxValue: maxValue,
-              onClick: onClick,
-              showText: showText,
-              cellStyleResolver: cellStyleResolver,
-              datasets: Map.from(datasets ?? {})
-                ..removeWhere(
-                  (key, value) =>
-                      !(key.isAfter(date.keys.first) &&
-                              key.isBefore(date.values.first) ||
-                          key == date.keys.first ||
-                          key == date.values.first),
-                ),
-            ),
+          for (final date in separatedDate)
+            _buildRow(startDate: date.keys.first, endDate: date.values.first),
         ],
       ),
     );

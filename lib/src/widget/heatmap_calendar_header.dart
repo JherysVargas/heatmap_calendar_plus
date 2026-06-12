@@ -19,8 +19,9 @@ class HeatMapCalendarHeader extends StatelessWidget {
   final TextStyle? textStyle;
   final DateTime? currentDate;
 
-  /// End date of the range — only used for [HeatmapCalendarType.week] and
-  /// [HeatmapCalendarType.biweek].
+  /// End date of the range. When non-null, the label renders a
+  /// `start – end` range — used for [HeatmapCalendarType.week],
+  /// [HeatmapCalendarType.biweek], and the dynamic-range month.
   final DateTime? endDate;
 
   final ValueChanged<int> changeMonth;
@@ -32,9 +33,10 @@ class HeatMapCalendarHeader extends StatelessWidget {
     final fmt = DateFormat(datePattern, languageCode);
     final start = currentDate ?? DateTime.now();
 
-    if ((type == HeatmapCalendarType.week ||
-            type == HeatmapCalendarType.biweek) &&
-        endDate != null) {
+    // A non-null endDate means the caller wants a range label. This covers
+    // week/biweek and the dynamic-range month — the caller only passes an
+    // endDate for those cases.
+    if (endDate != null) {
       return '${fmt.format(start)} – ${fmt.format(endDate!)}';
     }
 

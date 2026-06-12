@@ -4,7 +4,6 @@ import '../data/heatmap_cell_style.dart';
 import '../util/datasets_util.dart';
 import './heatmap_container.dart';
 import '../data/heatmap_color_mode.dart';
-import '../util/date_util.dart';
 import '../util/widget_util.dart';
 
 class HeatMapCalendarRow extends StatelessWidget {
@@ -96,17 +95,17 @@ class HeatMapCalendarRow extends StatelessWidget {
     this.cellStyleResolver,
   });
 
-  bool _isEmptyStart(int i) {
-    return (startDate == DateUtil.startDayOfMonth(startDate) &&
-        endDate.day - startDate.day != kDefaultDaysOfWeek &&
-        i < ((startDate.weekday - weekStartsWith) % kDefaultDaysOfWeek));
-  }
+  /// Column index (0-based) where [date] falls given [weekStartsWith].
+  ///
+  /// Dart's `%` returns a non-negative result for a positive divisor, so the
+  /// value is always within `[0, kDefaultDaysOfWeek - 1]`.
+  int _cellIndex(DateTime date) =>
+      (date.weekday - weekStartsWith) % kDefaultDaysOfWeek;
 
-  bool _isEmptyEnd(int i) {
-    return (endDate == DateUtil.endDayOfMonth(endDate) &&
-        endDate.day - startDate.day != kDefaultDaysOfWeek &&
-        i > ((endDate.weekday - weekStartsWith) % kDefaultDaysOfWeek));
-  }
+  /// A cell is empty when it falls before [startDate]'s column or after
+  /// [endDate]'s column. This aligns rows to [weekStartsWith] and works for
+  /// full weeks, partial month edges, and rows that cross a month boundary.
+  bool _isEmpty(int i) => i < _cellIndex(startDate) || i > _cellIndex(endDate);
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +113,7 @@ class HeatMapCalendarRow extends StatelessWidget {
       spacing: spacing,
       mainAxisSize: MainAxisSize.min,
       children: List<Widget>.generate(kDefaultDaysOfWeek, (i) {
-        final bool isEmpty = _isEmptyStart(i) || _isEmptyEnd(i);
+        final bool isEmpty = _isEmpty(i);
 
         return WidgetUtil.flexibleContainer(
           isFlexible: flexible ?? false,
@@ -135,9 +134,7 @@ class HeatMapCalendarRow extends StatelessWidget {
     final date = DateTime(
       startDate.year,
       startDate.month,
-      startDate.day +
-          i -
-          ((startDate.weekday - weekStartsWith) % kDefaultDaysOfWeek),
+      startDate.day + i - _cellIndex(startDate),
     );
 
     return HeatMapContainer(
@@ -174,8 +171,12 @@ class HeatMapCalendarRow extends StatelessWidget {
     // and set opacity value to current day's datasets key
     // devided by maxValue which is the maximum value of the month.
     if (colorMode == ColorMode.opacity) {
+      // Guard against a zero/negative max: dividing by it would yield a
+      // non-finite alpha and throw. Fall back to the default color instead.
+      final int max = maxValue ?? 1;
+      if (max <= 0) return null;
       return colorsets?.values.first.withValues(
-        alpha: dataSetFound / (maxValue ?? 1),
+        alpha: dataSetFound / max,
       );
     }
 
